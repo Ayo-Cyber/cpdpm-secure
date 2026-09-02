@@ -1,6 +1,6 @@
 # CPDPM v2 design: context-bound AEAD for clinical records
 
-Status: draft v1, 2 September 2026. Core implemented in `cpdpm/` (context, header, kdf, aead, keys, core); FHIR field-level pending.
+Status: draft v1, 2 September 2026. Core and FHIR field-level layer implemented in `cpdpm/` (context, header, kdf, aead, keys, core, fhir).
 Companion: [threat-model.md](threat-model.md). Naming: *protocol* version 2 is the byte in the header; the *package* version starts at 0.1.0.
 
 ## 1. One-paragraph summary
