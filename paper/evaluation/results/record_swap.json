@@ -1,6 +1,6 @@
 {
   "_meta": {
-    "generated_utc": "2026-09-02T11:45:09+00:00",
+    "generated_utc": "2026-09-02T13:13:56+00:00",
     "machine": "arm64",
     "python": "3.14.6",
     "script": "record_swap",
@@ -22,7 +22,7 @@
         "outcome": "accepted",
         "returned": "Female, Self-employed, Rural, smoking: never smoked, hypertension: 0, heart disease: 0, stroke: 1"
       },
-      "scheme": "v1 (shipped client build)",
+      "scheme": "AES-256-CBC + HMAC, one shared key",
       "stale_replay_after_retirement": {
         "outcome": "accepted",
         "returned": "2026-01-15T09:30:00Z"
@@ -72,7 +72,7 @@
         "error_type": "DecryptionError",
         "outcome": "rejected"
       },
-      "scheme": "CPDPM v2 (this work)",
+      "scheme": "CPDPM (this work)",
       "stale_replay_after_retirement": {
         "error_type": "DecryptionError",
         "outcome": "rejected"
@@ -87,9 +87,16 @@
     "patient_swap": {
       "outcome": "rejected"
     },
-    "scheme": "CPDPM v2 FHIR layer"
+    "scheme": "CPDPM FHIR layer"
   },
   "matrix": {
+    "AES-256-CBC + HMAC, one shared key": {
+      "control": "accepted",
+      "field_move": "accepted",
+      "patient_swap": "accepted",
+      "stale_replay_after_retirement": "accepted",
+      "tenant_move": "accepted"
+    },
     "AES-256-GCM, key per tenant, no AAD": {
       "control": "accepted",
       "field_move": "accepted",
@@ -97,19 +104,12 @@
       "stale_replay_after_retirement": "accepted",
       "tenant_move": "rejected"
     },
-    "CPDPM v2 (this work)": {
+    "CPDPM (this work)": {
       "control": "accepted",
       "field_move": "rejected",
       "patient_swap": "rejected",
       "stale_replay_after_retirement": "rejected",
       "tenant_move": "rejected"
-    },
-    "v1 (shipped client build)": {
-      "control": "accepted",
-      "field_move": "accepted",
-      "patient_swap": "accepted",
-      "stale_replay_after_retirement": "accepted",
-      "tenant_move": "accepted"
     }
   }
 }

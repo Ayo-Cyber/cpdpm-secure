@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="600" viewBox="0 0 1200 600" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">
+  <rect width="1200" height="600" fill="#ffffff"/>
+  <text x="40" y="54" font-size="27" font-weight="700" fill="#0b0b0b">Where the binding comes from</text>
+  <text x="40" y="82" font-size="16" fill="#52514e">Both pipelines encrypt one value with a standard cipher. Only one of them knows whose value it is.</text>
+
+  <!-- ===== baseline ===== -->
+  <text x="40" y="128" font-size="13" font-weight="700" fill="#52514e" letter-spacing="1.5">TYPICAL BASELINE · ENCRYPTION AT REST WITH A SHARED KEY</text>
+  <line x1="40" y1="138" x2="1160" y2="138" stroke="#d9d9d5" stroke-width="1"/>
+
+  <rect x="40" y="170" width="170" height="90" rx="6" fill="#ffffff" stroke="#8a8a86" stroke-width="1.5"/>
+  <text x="125" y="210" font-size="15" font-weight="700" fill="#0b0b0b" text-anchor="middle">plaintext</text>
+  <text x="125" y="232" font-size="12.5" fill="#52514e" text-anchor="middle">a field of a record</text>
+
+  <line x1="210" y1="215" x2="242" y2="215" stroke="#52514e" stroke-width="2"/>
+  <polygon points="240,209 240,221 250,215" fill="#52514e"/>
+
+  <rect x="250" y="170" width="260" height="90" rx="6" fill="#e6f0fb" stroke="#2a78d6" stroke-width="1.5"/>
+  <text x="380" y="198" font-size="15" font-weight="700" fill="#0b0b0b" text-anchor="middle">AES-256 (GCM or CBC + HMAC)</text>
+  <text x="380" y="222" font-size="12.5" fill="#52514e" text-anchor="middle">one key per database or per tenant</text>
+  <text x="380" y="244" font-size="12.5" fill="#52514e" text-anchor="middle">random nonce or IV · no associated data</text>
+
+  <line x1="510" y1="215" x2="542" y2="215" stroke="#52514e" stroke-width="2"/>
+  <polygon points="540,209 540,221 550,215" fill="#52514e"/>
+
+  <rect x="550" y="170" width="200" height="90" rx="6" fill="#fafaf8" stroke="#8a8a86" stroke-width="1.5"/>
+  <text x="650" y="198" font-size="15" font-weight="700" fill="#0b0b0b" text-anchor="middle">ciphertext</text>
+  <text x="650" y="222" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#0b0b0b" text-anchor="middle">nonce || ct || tag</text>
+  <text x="650" y="244" font-size="12.5" fill="#52514e" text-anchor="middle">valid under the key, for anyone</text>
+
+  <line x1="750" y1="215" x2="782" y2="215" stroke="#52514e" stroke-width="2"/>
+  <polygon points="780,209 780,221 790,215" fill="#52514e"/>
+
+  <rect x="790" y="150" width="370" height="130" rx="6" fill="#fbe3e3" stroke="#d03b3b" stroke-width="1.5"/>
+  <text x="810" y="178" font-size="15" font-weight="700" fill="#0b0b0b">stored in a row the adversary can rewrite</text>
+  <text x="810" y="204" font-size="13" fill="#52514e">The row key says "Patient/alice". The ciphertext says</text>
+  <text x="810" y="222" font-size="13" fill="#52514e">nothing about who it belongs to. Move it to another</text>
+  <text x="810" y="240" font-size="13" fill="#52514e">row, tenant table or column and it still decrypts.</text>
+  <text x="810" y="266" font-size="13" font-weight="700" fill="#d03b3b">Confidentiality: yes. Binding: none.</text>
+
+  <!-- ===== cpdpm ===== -->
+  <text x="40" y="330" font-size="13" font-weight="700" fill="#52514e" letter-spacing="1.5">CPDPM · CONTEXT-BOUND ENCRYPTION</text>
+  <line x1="40" y1="340" x2="1160" y2="340" stroke="#d9d9d5" stroke-width="1"/>
+
+  <rect x="40" y="372" width="170" height="90" rx="6" fill="#fcf1d9" stroke="#eda100" stroke-width="1.5"/>
+  <text x="125" y="400" font-size="15" font-weight="700" fill="#0b0b0b" text-anchor="middle">context</text>
+  <text x="125" y="422" font-size="12.5" fill="#52514e" text-anchor="middle">tenant · patient · resource</text>
+  <text x="125" y="440" font-size="12.5" fill="#52514e" text-anchor="middle">field path · purpose</text>
+
+  <rect x="40" y="482" width="170" height="60" rx="6" fill="#e6f0fb" stroke="#2a78d6" stroke-width="1.5"/>
+  <text x="125" y="508" font-size="15" font-weight="700" fill="#0b0b0b" text-anchor="middle">MK[v]</text>
+  <text x="125" y="528" font-size="12.5" fill="#52514e" text-anchor="middle">versioned master key</text>
+
+  <polyline points="210,417 230,417 230,442 242,442" fill="none" stroke="#52514e" stroke-width="2"/>
+  <polyline points="210,512 230,512 230,442 242,442" fill="none" stroke="#52514e" stroke-width="2"/>
+  <polygon points="240,436 240,448 250,442" fill="#52514e"/>
+
+  <rect x="250" y="397" width="260" height="90" rx="6" fill="#e6f0fb" stroke="#2a78d6" stroke-width="1.5"/>
+  <text x="380" y="425" font-size="15" font-weight="700" fill="#0b0b0b" text-anchor="middle">HKDF-SHA256</text>
+  <text x="380" y="449" font-size="12.5" fill="#52514e" text-anchor="middle">→ K_ctx, a key for this context only</text>
+  <text x="380" y="471" font-size="12.5" fill="#52514e" text-anchor="middle">→ commit, 32-byte key commitment</text>
+
+  <line x1="510" y1="442" x2="542" y2="442" stroke="#52514e" stroke-width="2"/>
+  <polygon points="540,436 540,448 550,442" fill="#52514e"/>
+
+  <rect x="550" y="397" width="200" height="90" rx="6" fill="#e2f5ee" stroke="#1baf7a" stroke-width="1.5"/>
+  <text x="650" y="425" font-size="15" font-weight="700" fill="#0b0b0b" text-anchor="middle">AEAD</text>
+  <text x="650" y="449" font-size="12.5" fill="#52514e" text-anchor="middle">AES-256-GCM or XChaCha</text>
+  <text x="650" y="471" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#0b0b0b" text-anchor="middle">aad = header || canon(ctx)</text>
+
+  <rect x="570" y="358" width="160" height="26" rx="5" fill="#ffffff" stroke="#8a8a86" stroke-width="1.2"/>
+  <text x="650" y="376" font-size="12.5" fill="#0b0b0b" text-anchor="middle">plaintext = commit || value</text>
+  <line x1="650" y1="384" x2="650" y2="392" stroke="#52514e" stroke-width="2"/>
+  <polygon points="644,390 656,390 650,398" fill="#52514e"/>
+
+  <line x1="750" y1="442" x2="782" y2="442" stroke="#52514e" stroke-width="2"/>
+  <polygon points="780,436 780,448 790,442" fill="#52514e"/>
+
+  <rect x="790" y="372" width="370" height="130" rx="6" fill="#e3f4e3" stroke="#0ca30c" stroke-width="1.5"/>
+  <text x="810" y="400" font-size="15" font-weight="700" fill="#0b0b0b">stored in the same rewritable row</text>
+  <text x="810" y="426" font-size="13" fill="#52514e">The application re-derives K_ctx and the AAD from the</text>
+  <text x="810" y="444" font-size="13" fill="#52514e">row it believes it is reading. A ciphertext made for any</text>
+  <text x="810" y="462" font-size="13" fill="#52514e">other patient, tenant or field fails both checks.</text>
+  <text x="810" y="488" font-size="13" font-weight="700" fill="#0b7a0b">Confidentiality: the same. Binding: proven at decrypt.</text>
+
+  <text x="40" y="572" font-size="13.5" fill="#0b0b0b">Same primitives, same key sizes, one extra derivation per operation. The difference is that the ciphertext can only be read where it was written.</text>
+</svg>

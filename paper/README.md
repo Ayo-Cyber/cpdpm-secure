@@ -7,7 +7,8 @@ Reproducible experiments and figures for the thesis and paper. Every number that
 | `analysis/` | 3, analysis of CPDPM v1 | `affine_map.py`, `context_key.py`, `client_build.py`, `fair_benchmark.py`, `make_figures.py` |
 | `construction/` | 4, the v2 design | `gen_kat.py` writes the known-answer vectors in `tests/vectors/` |
 | `evaluation/` | 5, evaluation | `records.py` (FHIR-shaped payloads from the stroke dataset), `record_swap.py` (attack matrix), `benchmark.py` (pyperf), `summarize.py`, `make_figures.py` |
-| `figures/` | all | Generated output only. Never edit by hand. |
+| `diagrams/` | 4, 5 | Hand-authored SVG sources for the explanatory figures (key hierarchy, wire formats, manifest, baseline comparison, record-swap sequence). `render.py` makes PDFs with svglib; the committed PNG/PDF pairs were rendered in Chromium for exact fonts. |
+| `figures/` | all | Generated output only. Charts from scripts, diagrams from `diagrams/*.svg`. Never edit by hand. |
 
 ## Running
 

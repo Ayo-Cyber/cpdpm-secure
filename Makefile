@@ -2,7 +2,7 @@ PY ?= python3
 VENV := .venv
 BIN := $(VENV)/bin
 
-.PHONY: setup test coverage lint typecheck legacy-test legacy-setup analysis evaluation evaluation-fast figures all clean
+.PHONY: setup test coverage lint typecheck legacy-test legacy-setup analysis evaluation evaluation-fast figures diagrams all clean
 
 ## One-command setup: fresh virtualenv with the package and dev tools.
 setup:
@@ -54,6 +54,12 @@ evaluation-fast:
 figures:
 	$(BIN)/python -m paper.analysis.make_figures
 	$(BIN)/python -m paper.evaluation.make_figures
+	$(BIN)/python -m paper.construction.overhead_table
+
+## Diagram PDFs from paper/diagrams/*.svg via svglib (fallback renderer; the committed
+## PNG/PDF pairs were rendered in Chromium for exact fonts, see paper/README.md).
+diagrams:
+	$(BIN)/python -m paper.diagrams.render
 
 ## Everything the paper needs, from a clean checkout: gate, analysis, evaluation, figures.
 all: test analysis evaluation figures

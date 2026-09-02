@@ -90,6 +90,12 @@ Reading: v2-gcm carries a fixed cost of about 12 µs per operation (two HKDF-SHA
 | table 5-1 | Attack matrix | `paper/evaluation/make_figures.py` |
 | fig 5-1 | Latency per scheme and payload size | `paper/evaluation/make_figures.py` |
 | fig 5-2 | Overhead over raw AES-GCM vs payload size | `paper/evaluation/make_figures.py` |
+| fig 4-0 | Baseline shared-key encryption vs context-bound encryption | `paper/diagrams/fig4-0_baseline_vs_cpdpm.svg` |
+| fig 4-1 | Key hierarchy and encryption path | `paper/diagrams/fig4-1_key_hierarchy.svg` |
+| fig 4-2 | Wire formats: one-shot blob and stream | `paper/diagrams/fig4-2_wire_format.svg` |
+| fig 4-3 | Field-level encryption with the manifest | `paper/diagrams/fig4-3_fhir_manifest.svg` |
+| fig 5-0 | The record-swap attack, three schemes | `paper/diagrams/fig5-0_record_swap.svg` |
+| table 4-1 | Bytes of overhead per ciphertext, measured | `paper/construction/overhead_table.py` |
 
 ## Reproduction
 
