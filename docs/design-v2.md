@@ -1,6 +1,6 @@
 # CPDPM v2 design: context-bound AEAD for clinical records
 
-Status: draft v0, week 0 (2 September 2026). Implementation starts week 3.
+Status: draft v1, 2 September 2026. Core implemented in `cpdpm/` (context, header, kdf, aead, keys, core); FHIR field-level pending.
 Companion: [threat-model.md](threat-model.md). Naming: *protocol* version 2 is the byte in the header; the *package* version starts at 0.1.0.
 
 ## 1. One-paragraph summary
@@ -42,7 +42,7 @@ canon(ctx) = 0x02
            || u16be(len(purpose))       || utf8(purpose)
 ```
 
-Length-prefixing every field means `("ab","c")` and `("a","bc")` encode differently. Strings are NFC-normalised before encoding. Maximum field length 65,535 bytes. Empty strings are permitted only for `purpose`.
+Length-prefixing every field means `("ab","c")` and `("a","bc")` encode differently. Strings are NFC-normalised before encoding. Maximum field length 65,535 bytes. `patient` and `purpose` may be empty; the other three are required (§12).
 
 **Rule the API enforces.** Context comes from the caller at *both* encrypt and decrypt. It is never read from the ciphertext, and the header never stores it. An application that stores context beside the ciphertext and reads it back has re-created the v1 hole; the documentation says so in the first paragraph.
 
@@ -89,9 +89,9 @@ For deployments without a KMS, MK may be derived from a passphrase:
 - **Argon2id**, memory 64 MiB, iterations 3, parallelism 1, 16-byte random salt, 32-byte output. Parameters are stored beside the wrapped key, never in the ciphertext.
 - **PBKDF2-HMAC-SHA256**, 600,000 iterations, only for migrating v1 deployments. Emits a deprecation warning.
 
-## 7. Key commitment (proposed, decision pending)
+## 7. Key commitment (decided: in)
 
-AES-GCM does not commit to its key: an adversary can craft one ciphertext that decrypts validly under two keys. In password settings this enables partitioning-oracle attacks. Proposed mitigation, cheap and standard: prepend to the plaintext a 32-byte commitment `HKDF(MK[v], info="cpdpm/v2/commit" || canon(ctx))` and verify it after decryption in constant time. Cost: 32 bytes per ciphertext, one extra HKDF. Decision: include if the supervisor agrees it is in scope; otherwise document as a limitation in chapter 6.
+AES-GCM does not commit to its key: an adversary can craft one ciphertext that decrypts validly under two keys. In password settings this enables partitioning-oracle attacks. Proposed mitigation, cheap and standard: prepend to the plaintext a 32-byte commitment `HKDF(MK[v], info="cpdpm/v2/commit" || canon(ctx))` and verify it after decryption in constant time. Cost: 32 bytes per ciphertext, one extra HKDF. Decision: implemented and always on. It is cheap, standard (Albertini et al., "How to abuse and fix authenticated encryption without key commitment"), and removes a whole attack class from the discussion chapter.
 
 ## 8. Field-level FHIR encryption
 
@@ -141,8 +141,11 @@ The reduction is routine; the chapter's value is stating it precisely for this e
 - v1 blob detection: a legacy base64-JSON package raises `DecryptionError`, never a decode exception.
 - Constant-time: commitment comparison uses `hmac.compare_digest`.
 
-## 12. Decisions still open
+## 12. Decisions
 
-1. Key commitment in or out (§7).
-2. Whether `purpose` belongs in the context or is over-binding for real applications (a record encrypted for "clinical" cannot be read for "research" without re-encryption; that may be a feature).
-3. Whether `patient` should be optional for tenant-level resources such as `Organization` and `Practitioner`. Leaning yes, with an explicit empty marker so absence is itself bound.
+1. **Key commitment: in** (§7). Implemented.
+2. **`patient` may be empty** for tenant-level resources such as `Organization` and `Practitioner`. The empty string is length-prefixed like any value, so absence is itself bound: a ciphertext for "no patient" fails under any patient. `tenant`, `resource_type` and `field_path` are required. Implemented in `cpdpm/context.py`.
+3. **`purpose` stays in the context** as an optional field. Binding a record to a purpose means it cannot be read for another purpose without re-encryption; that is the intended behaviour for research extracts. Applications that do not want it leave it empty.
+4. **XChaCha20-Poly1305 comes from libsodium via PyNaCl** as an optional extra (`cpdpm[xchacha]`), since `cryptography` does not expose it. Hand-implementing HChaCha20 was rejected: no new primitive code in this project.
+5. **Argon2id comes from `argon2-cffi`** as an optional extra (`cpdpm[password]`). PBKDF2 at 600k iterations is always available for v1 migration and warns.
+6. **Context strings are NFC-normalised and reject `\0`, `\n`, `\r`**, so two visually identical identifiers cannot silently be two contexts, and log-injection through a context value is not possible.

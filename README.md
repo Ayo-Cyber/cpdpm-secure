@@ -6,13 +6,13 @@ A record field is encrypted with a standard AEAD (AES-256-GCM or XChaCha20-Poly1
 
 Nothing is invented at the primitive level. The contribution is the binding discipline, its encoding, the key hierarchy, and the evidence that it stops a concrete attack that plain AES does not.
 
-**Status: pre-alpha.** Protocol v2 is specified but not yet implemented. Do not use for real data. See the [roadmap](docs/ROADMAP.md).
+**Status: pre-alpha.** The protocol v2 core (context binding, key hierarchy, both suites, rotation, key commitment) is implemented and tested; FHIR field-level encryption and the evaluation are next. Unreviewed. Do not use for real data. See the [roadmap](docs/ROADMAP.md).
 
 ## Repository
 
 | Path | Purpose |
 |---|---|
-| [`cpdpm/`](cpdpm/) | The library (protocol v2). Implementation begins week 3 of the roadmap. |
+| [`cpdpm/`](cpdpm/) | The library (protocol v2): `context`, `header`, `kdf`, `aead`, `keys`, `core` |
 | [`docs/threat-model.md`](docs/threat-model.md) | Assets, adversaries, goals, and the attack the evaluation demonstrates |
 | [`docs/design-v2.md`](docs/design-v2.md) | Context encoding, key hierarchy, wire format, API, security argument, test plan |
 | [`docs/ROADMAP.md`](docs/ROADMAP.md) | Sixteen-week plan to paper submission, preprint, and 0.1.0 alpha |
