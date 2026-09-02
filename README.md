@@ -12,9 +12,10 @@ Nothing is invented at the primitive level. The contribution is the binding disc
 
 | Path | Purpose |
 |---|---|
-| [`cpdpm/`](cpdpm/) | The library (protocol v2): `context`, `header`, `kdf`, `aead`, `keys`, `core`, `fhir` |
+| [`cpdpm/`](cpdpm/) | The library (protocol v2): `context`, `header`, `kdf`, `aead`, `keys`, `core`, `fhir`, `stream` |
 | [`docs/threat-model.md`](docs/threat-model.md) | Assets, adversaries, goals, and the attack the evaluation demonstrates |
 | [`docs/design-v2.md`](docs/design-v2.md) | Context encoding, key hierarchy, wire format, API, security argument, test plan |
+| [`docs/red-team-2026-09.md`](docs/red-team-2026-09.md) | Self-review findings, fixes, and what is left as a limitation |
 | [`docs/ROADMAP.md`](docs/ROADMAP.md) | Sixteen-week plan to paper submission, preprint, and 0.1.0 alpha |
 | [`paper/`](paper/) | Reproducible experiments and figures |
 | [`legacy/`](legacy/) | CPDPM v1 as shipped, frozen. Object of study for the analysis chapter. |

@@ -46,9 +46,13 @@ class Context:
             normalised = unicodedata.normalize("NFC", value)
             if normalised != value:
                 object.__setattr__(self, name, normalised)
-            if len(normalised.encode("utf-8")) > MAX_FIELD_BYTES:
+            try:
+                raw = normalised.encode("utf-8")
+            except UnicodeEncodeError as exc:  # lone surrogates
+                raise ContextError(f"{name} is not valid Unicode text") from exc
+            if len(raw) > MAX_FIELD_BYTES:
                 raise ContextError(f"{name} exceeds {MAX_FIELD_BYTES} bytes")
-            if any(ch in "\x00\n\r" for ch in normalised):
+            if any(unicodedata.category(ch) in ("Cc", "Cs") for ch in normalised):
                 raise ContextError(f"{name} contains a control character")
         for name in _REQUIRED:
             if getattr(self, name) == "":

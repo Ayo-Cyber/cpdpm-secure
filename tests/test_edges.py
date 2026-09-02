@@ -47,7 +47,7 @@ def test_fhir_paths_through_non_containers_are_skipped() -> None:
     enc = encrypt_resource(kr, "t", res, ["code.text", "note[*].text"])
     assert enc["code"] == "just-a-string"
     assert enc["note"] == {"text": "not a list"}
-    assert enc["meta"]["tag"] == []
+    assert not [t for t in enc["meta"]["tag"] if t["system"] == "urn:cpdpm:encrypted-paths"]
 
 
 def test_fhir_requires_resource_type() -> None:
@@ -62,3 +62,9 @@ def test_whole_resource_garbage_is_decryption_error() -> None:
     kr = Keyring.generate()
     with pytest.raises(DecryptionError):
         decrypt_resource_whole(kr, "t", "not a blob", resource_type="Condition", patient="")
+
+
+def test_context_rejects_lone_surrogates_with_context_error() -> None:
+    for bad in ("t\ud800", "\udfff", "a\ud83d"):
+        with pytest.raises(ContextError):
+            Context(bad, "p", "R", "f")

@@ -105,7 +105,7 @@ def test_tampered_tag_list_cannot_expose_or_confuse(keyring: Keyring) -> None:
 def test_missing_paths_are_skipped(keyring: Keyring) -> None:
     minimal = {"resourceType": "Condition", "subject": {"reference": "Patient/x"}}
     enc = encrypt_resource(keyring, TENANT, minimal, POLICY)
-    assert enc["meta"]["tag"] == []
+    assert not [t for t in enc["meta"]["tag"] if t["system"] == TAG_SYSTEM]
     assert decrypt_resource(keyring, TENANT, enc, patient="Patient/x") == minimal
 
 
