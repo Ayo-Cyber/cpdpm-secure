@@ -9,6 +9,7 @@ Run: python -m paper.evaluation.summarize
 from __future__ import annotations
 
 import re
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -22,7 +23,8 @@ _NAME = re.compile(
 
 
 def main() -> None:
-    suite = pyperf.BenchmarkSuite.load(str(IN))
+    src = Path(sys.argv[1]) if len(sys.argv) > 1 else IN
+    suite = pyperf.BenchmarkSuite.load(str(src))
     rows: list[dict[str, Any]] = []
     for bench in suite.get_benchmarks():
         m = _NAME.match(bench.get_name())
@@ -51,6 +53,10 @@ def main() -> None:
             "cpu": meta.get("cpu_model_name"),
             "platform": meta.get("platform"),
             "pyperf": meta.get("perf_version"),
+            "source": src.name,
+            "fast_mode": "--fast" in " ".join(meta.get("command_line", []))
+            if isinstance(meta.get("command_line"), list)
+            else None,
         },
         "rows": sorted(rows, key=lambda r: (r["n"], r["op"], r["scheme"])),
     }

@@ -15,7 +15,7 @@ Done on day one, all on branch `week0-foundations` (not pushed):
 
 Which means the calendar below has roughly six weeks of slack. Spend it on the reading (weeks 1–5, unchanged: that is your work), on the writing, and on the red-team read. The writing is yours; the evidence, figures and outline are ready for it.
 
-Still open before the final run: full (non `--fast`) pyperf on the submission machine, XChaCha re-measured on x86-64, the critiqued-genre table for chapter 2.
+Still open before submission: repeat the pyperf run on an x86-64 machine (the pinned run is a full-settings run on the arm64 dev machine), the critiqued-genre table for chapter 2, the red-team read.
 
 ## Under the tree on 25 December
 
