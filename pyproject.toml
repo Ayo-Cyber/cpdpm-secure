@@ -44,6 +44,7 @@ paper = [
   "pandas>=2.2",
   "matplotlib>=3.9",
   "pyperf>=2.7",
+  "tink>=1.10",
 ]
 
 [project.urls]

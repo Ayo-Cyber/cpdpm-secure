@@ -28,9 +28,9 @@ def add_legacy_paths() -> None:
             sys.path.insert(0, s)
 
 
-def write_result(name: str, data: dict[str, Any]) -> Path:
-    RESULTS.mkdir(parents=True, exist_ok=True)
-    out = RESULTS / f"{name}.json"
+def write_result(name: str, data: dict[str, Any], results_dir: Path = RESULTS) -> Path:
+    results_dir.mkdir(parents=True, exist_ok=True)
+    out = results_dir / f"{name}.json"
     payload = {
         "_meta": {
             "script": name,

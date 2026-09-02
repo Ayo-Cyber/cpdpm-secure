@@ -2,7 +2,7 @@ PY ?= python3
 VENV := .venv
 BIN := $(VENV)/bin
 
-.PHONY: setup test lint typecheck legacy-test legacy-setup analysis figures clean
+.PHONY: setup test lint typecheck legacy-test legacy-setup analysis evaluation evaluation-fast figures all clean
 
 ## One-command setup: fresh virtualenv with the package and dev tools.
 setup:
@@ -36,9 +36,24 @@ analysis:
 	$(BIN)/python -m paper.analysis.client_build
 	$(BIN)/python -m paper.analysis.fair_benchmark
 
-## Regenerates every figure in paper/figures from raw results.
+## Chapter 5: attack matrix and pyperf benchmarks (needs `pip install tink`).
+evaluation:
+	$(BIN)/python -m paper.evaluation.record_swap
+	$(BIN)/python -m paper.evaluation.benchmark -o paper/evaluation/results/bench_pyperf.json --quiet
+	$(BIN)/python -m paper.evaluation.summarize
+
+evaluation-fast:
+	$(BIN)/python -m paper.evaluation.record_swap
+	$(BIN)/python -m paper.evaluation.benchmark --fast -o paper/evaluation/results/bench_pyperf.json --quiet
+	$(BIN)/python -m paper.evaluation.summarize
+
+## Regenerates every figure and table in paper/figures from raw results.
 figures:
 	$(BIN)/python -m paper.analysis.make_figures
+	$(BIN)/python -m paper.evaluation.make_figures
+
+## Everything the paper needs, from a clean checkout: gate, analysis, evaluation, figures.
+all: test analysis evaluation figures
 
 clean:
 	rm -rf $(VENV) .pytest_cache .mypy_cache .ruff_cache dist build *.egg-info

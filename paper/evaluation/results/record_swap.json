@@ -1,0 +1,115 @@
+{
+  "_meta": {
+    "generated_utc": "2026-09-02T11:45:09+00:00",
+    "machine": "arm64",
+    "python": "3.14.6",
+    "script": "record_swap",
+    "system": "Darwin"
+  },
+  "detail": [
+    {
+      "bob_note_for_reference": "Female, Self-employed, Rural, smoking: never smoked, hypertension: 0, heart disease: 0, stroke: 1",
+      "control_correct_row": {
+        "outcome": "accepted",
+        "returned": "Male, Private, Urban, smoking: formerly smoked, hypertension: 0, heart disease: 1, stroke: 1"
+      },
+      "expected_alice_note": "Male, Private, Urban, smoking: formerly smoked, hypertension: 0, heart disease: 1, stroke: 1",
+      "field_move": {
+        "outcome": "accepted",
+        "returned": "Male, Private, Urban, smoking: formerly smoked, hypertension: 0, heart disease: 1, stroke: 1"
+      },
+      "patient_swap": {
+        "outcome": "accepted",
+        "returned": "Female, Self-employed, Rural, smoking: never smoked, hypertension: 0, heart disease: 0, stroke: 1"
+      },
+      "scheme": "v1 (shipped client build)",
+      "stale_replay_after_retirement": {
+        "outcome": "accepted",
+        "returned": "2026-01-15T09:30:00Z"
+      },
+      "tenant_move": {
+        "outcome": "accepted",
+        "returned": "Male, Private, Urban, smoking: formerly smoked, hypertension: 0, heart disease: 1, stroke: 1"
+      }
+    },
+    {
+      "bob_note_for_reference": "Female, Self-employed, Rural, smoking: never smoked, hypertension: 0, heart disease: 0, stroke: 1",
+      "control_correct_row": {
+        "outcome": "accepted",
+        "returned": "Male, Private, Urban, smoking: formerly smoked, hypertension: 0, heart disease: 1, stroke: 1"
+      },
+      "expected_alice_note": "Male, Private, Urban, smoking: formerly smoked, hypertension: 0, heart disease: 1, stroke: 1",
+      "field_move": {
+        "outcome": "accepted",
+        "returned": "Male, Private, Urban, smoking: formerly smoked, hypertension: 0, heart disease: 1, stroke: 1"
+      },
+      "patient_swap": {
+        "outcome": "accepted",
+        "returned": "Female, Self-employed, Rural, smoking: never smoked, hypertension: 0, heart disease: 0, stroke: 1"
+      },
+      "scheme": "AES-256-GCM, key per tenant, no AAD",
+      "stale_replay_after_retirement": {
+        "outcome": "accepted",
+        "returned": "2026-01-15T09:30:00Z"
+      },
+      "tenant_move": {
+        "error_type": "InvalidTag",
+        "outcome": "rejected"
+      }
+    },
+    {
+      "bob_note_for_reference": "Female, Self-employed, Rural, smoking: never smoked, hypertension: 0, heart disease: 0, stroke: 1",
+      "control_correct_row": {
+        "outcome": "accepted",
+        "returned": "Male, Private, Urban, smoking: formerly smoked, hypertension: 0, heart disease: 1, stroke: 1"
+      },
+      "expected_alice_note": "Male, Private, Urban, smoking: formerly smoked, hypertension: 0, heart disease: 1, stroke: 1",
+      "field_move": {
+        "error_type": "DecryptionError",
+        "outcome": "rejected"
+      },
+      "patient_swap": {
+        "error_type": "DecryptionError",
+        "outcome": "rejected"
+      },
+      "scheme": "CPDPM v2 (this work)",
+      "stale_replay_after_retirement": {
+        "error_type": "DecryptionError",
+        "outcome": "rejected"
+      },
+      "tenant_move": {
+        "error_type": "DecryptionError",
+        "outcome": "rejected"
+      }
+    }
+  ],
+  "fhir_layer": {
+    "patient_swap": {
+      "outcome": "rejected"
+    },
+    "scheme": "CPDPM v2 FHIR layer"
+  },
+  "matrix": {
+    "AES-256-GCM, key per tenant, no AAD": {
+      "control": "accepted",
+      "field_move": "accepted",
+      "patient_swap": "accepted",
+      "stale_replay_after_retirement": "accepted",
+      "tenant_move": "rejected"
+    },
+    "CPDPM v2 (this work)": {
+      "control": "accepted",
+      "field_move": "rejected",
+      "patient_swap": "rejected",
+      "stale_replay_after_retirement": "rejected",
+      "tenant_move": "rejected"
+    },
+    "v1 (shipped client build)": {
+      "control": "accepted",
+      "field_move": "accepted",
+      "patient_swap": "accepted",
+      "stale_replay_after_retirement": "accepted",
+      "tenant_move": "accepted"
+    }
+  }
+}
