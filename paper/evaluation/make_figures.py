@@ -96,7 +96,7 @@ def fig_latency(rows: list[dict]) -> None:  # type: ignore[type-arg]
     fig.suptitle(
         "Latency per operation on FHIR Bundle payloads", x=0.01, ha="left", fontsize=10, color=INK
     )
-    fig.tight_layout(rect=(0, 0, 1, 0.92))
+    fig.tight_layout(rect=(0, 0, 1, 0.96))
     for ext in ("pdf", "png"):
         fig.savefig(FIGURES / f"fig5-1_latency.{ext}")
     plt.close(fig)
@@ -117,16 +117,17 @@ def fig_overhead(rows: list[dict]) -> None:  # type: ignore[type-arg]
             f"{pts[-1]:.1f}×",
             (sizes[-1], pts[-1]),
             textcoords="offset points",
-            xytext=(6, 0),
+            xytext=(6, {"v2-gcm": 6, "tink": -6}.get(s, 0)),
             va="center",
             fontsize=8,
             color=INK,
         )
     ax.axhline(1.0, color=INK2, lw=0.8, ls="--")
+    ax.set_yscale("log")
     ax.set_xscale("log")
     ax.set_xticks(sizes, [f"{n}" for n in sizes])
     ax.set_xlabel("Observations per payload")
-    ax.set_ylabel("Encrypt time ÷ raw AES-GCM")
+    ax.set_ylabel("Encrypt time ÷ raw AES-GCM (log)")
     ax.set_title(
         "Overhead over raw AES-GCM shrinks as payloads grow", loc="left", color=INK, fontsize=10
     )

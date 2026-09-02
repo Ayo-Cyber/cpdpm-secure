@@ -30,6 +30,15 @@ make lint typecheck
 
 Legacy v1 has its own instructions in [`legacy/README.md`](legacy/README.md).
 
+## Reproduce the paper
+
+```bash
+make all                       # gate, chapter 3 analysis, chapter 5 evaluation, all figures
+docker build -t cpdpm-paper . && docker run --rm cpdpm-paper   # same, from a clean container
+```
+
+Results land in `paper/*/results/*.json`; figures and tables in `paper/figures/`. The map from claims to result files is [`paper/outline.md`](paper/outline.md).
+
 ## About v1
 
 The first version of this project, delivered to a client in 2025, wrapped AES-256-CBC in a "polynomial transformation" layer. Analysis showed that layer to be a public per-byte affine map contributing no security, that the "contextual" key derivation did not function, and that two of the reported measurements were artifacts. That analysis is chapter 3 of the thesis and the motivation for v2. The code is preserved unchanged in `legacy/`.

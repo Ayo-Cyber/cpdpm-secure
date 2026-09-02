@@ -57,7 +57,20 @@ Sections follow `docs/design-v2.md`: context and canonical encoding (§3, inject
 
 Honest note for the text: per-tenant keys already stop the tenant move; v2's contribution is the other three columns. Also report the FHIR-layer swap.
 
-**Experiment 2, cost** (`benchmark.py` → `summarize.py` → `benchmark.json`, fig 5-1, 5-2). Median latency per op, payloads of 1/10/100/1000 observations (726 B to 670 KB), schemes aes-gcm, fernet, tink, v2-gcm, v2-xchacha, plus the field-level path at n=1. Report the v2/aes-gcm ratio at each size and where the fixed cost (two HKDF calls, 32-byte commitment) stops mattering.
+**Experiment 2, cost** (`benchmark.py` → `summarize.py` → `benchmark.json`, fig 5-1, 5-2). Median latency per op, payloads of 1/10/100/1000 observations (726 B to 670 KB), schemes aes-gcm, fernet, tink, v2-gcm, v2-xchacha, plus the field-level path at n=1.
+
+First fast run (2 Sep 2026, arm64, Python 3.14, `--fast`; final run must use full pyperf settings):
+
+| Payload | aes-gcm encrypt | v2-gcm encrypt | ratio | fernet ratio | tink ratio |
+|---|---|---|---|---|---|
+| 1 obs, 726 B | 2.7 µs | 14.8 µs | 5.5x | 2.9x | 0.33x |
+| 10 obs, 6.6 KB | 3.5 µs | 16.0 µs | 4.5x | 6.2x | 0.52x |
+| 100 obs, 66 KB | 14.5 µs | 26.2 µs | 1.8x | 11.2x | 0.95x |
+| 1000 obs, 654 KB | 96.5 µs | 113.1 µs | 1.17x | 15.8x | 1.12x |
+
+Reading: v2-gcm carries a fixed cost of about 12 µs per operation (two HKDF-SHA256 derivations, a 32-byte commitment, header and context encoding), then tracks raw AES-GCM. At one small record it is 5x the raw floor and still under 15 µs; Fernet, the most common Python "just encrypt it" choice, is slower than v2 from 10 observations up. The field-level path (three fields, one observation) costs 110 µs, about 37 µs per field: per-field HKDF is the price of per-field binding. Tink beats raw `cryptography` at small sizes because it caches the cipher object; the raw baseline constructs `AESGCM(key)` per call, which is how application code usually does it.
+
+**XChaCha caveat, must be stated.** v2-xchacha is 111x the floor at 654 KB. A direct check shows PyNaCl's bundled libsodium encrypts 670 KB in 10.1 ms while `cryptography`'s ChaCha20-Poly1305 does it in 0.29 ms and AES-GCM in 0.07 ms on the same machine. The gap is the PyNaCl wheel's libsodium build on arm64 (no SIMD path), not the design. Report it as an implementation artifact, keep AES-GCM as the default suite, and re-measure on x86-64 in the final run.
 
 ## Chapter 6: Discussion and limitations
 
