@@ -2,7 +2,7 @@ PY ?= python3
 VENV := .venv
 BIN := $(VENV)/bin
 
-.PHONY: setup test lint typecheck legacy-test legacy-setup figures clean
+.PHONY: setup test lint typecheck legacy-test legacy-setup analysis figures clean
 
 ## One-command setup: fresh virtualenv with the package and dev tools.
 setup:
@@ -29,9 +29,16 @@ legacy-setup:
 legacy-test:
 	$(BIN)/pytest legacy/tests/test_cpdpm_comprehensive.py -q -p no:cacheprovider || true
 
-## Regenerates every figure in paper/figures from raw results (wired in week 6).
+## Chapter 3: every number in the analysis chapter comes from these scripts.
+analysis:
+	$(BIN)/python -m paper.analysis.affine_map
+	$(BIN)/python -m paper.analysis.context_key
+	$(BIN)/python -m paper.analysis.client_build
+	$(BIN)/python -m paper.analysis.fair_benchmark
+
+## Regenerates every figure in paper/figures from raw results.
 figures:
-	@echo "paper/figures: no experiments yet (see docs/ROADMAP.md, week 6-8)"
+	$(BIN)/python -m paper.analysis.make_figures
 
 clean:
 	rm -rf $(VENV) .pytest_cache .mypy_cache .ruff_cache dist build *.egg-info
