@@ -1,0 +1,51 @@
+{
+  "_meta": {
+    "generated_utc": "2026-09-02T11:32:23+00:00",
+    "machine": "arm64",
+    "python": "3.14.6",
+    "script": "client_build",
+    "system": "Darwin"
+  },
+  "client_benchmark_as_reported": {
+    "aes_decrypt_ms_median": 0.003814697265625,
+    "aes_encrypt_ms_median": 21.364927291870117,
+    "cpdpm_decrypt_ms_median": 21.753787994384766,
+    "cpdpm_encrypt_ms_median": 21.820068359375,
+    "data_size_bytes": 1024,
+    "explanation": "AES baseline decrypt reuses the derived key (no PBKDF2); CPDPM decrypt re-derives it. The 'total' ratio therefore counts one PBKDF2 for AES and two for CPDPM.",
+    "reps": 5
+  },
+  "keyless_transform": {
+    "key_material_in_transform_bits": 0,
+    "poly_coeffs": [
+      7,
+      11,
+      13
+    ],
+    "transform_identical_across_instances": true
+  },
+  "source_facts": {
+    "fixed_coefficients": [
+      {
+        "line": 100,
+        "text": "self.poly_coeffs = [7, 11, 13]  # Prime numbers for better distribution"
+      }
+    ],
+    "hardcoded_security_scores": [
+      {
+        "line": 617,
+        "text": "security_scores = [85, 95, 90]  # AES-256, CPDPM, RSA-2048"
+      }
+    ],
+    "hmac_uses_aes_key": [
+      {
+        "line": 172,
+        "text": "h = hmac.HMAC(key, hashes.SHA256(), backend=self.backend)"
+      },
+      {
+        "line": 219,
+        "text": "h = hmac.HMAC(key, hashes.SHA256(), backend=self.backend)"
+      }
+    ]
+  }
+}
