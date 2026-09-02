@@ -56,6 +56,7 @@ The application host is the trust anchor. Everything below it in the diagram is 
 | G1 Confidentiality | An adversary with any number of ciphertexts and adaptive decryption queries on other ciphertexts learns nothing about a plaintext beyond its length. (IND-CCA2, from AEAD security.) | A1, A3, A4 |
 | G2 Integrity | Any modification of a ciphertext, its header, or its nonce is detected and rejected before any plaintext is released. | A2, A4 |
 | G3 Context binding | A ciphertext produced for context *c* (tenant, patient, resource type, field path, key version) fails to decrypt under any context *c′ ≠ c*. Substitution, replay across contexts, and field swapping are therefore detected. | **A2**, A4 |
+| G3a Structural integrity (FHIR layer) | Within one resource, deleting, reordering, duplicating or individually replaying an encrypted field is detected via an encrypted manifest. Optionally, edits to clear fields are detected too. | **A2**, A4 |
 | G4 Key compartmentalisation | Per-context keys are derived through a PRF from MK. Disclosure of one derived key does not help recover MK or any other derived key. | A5 |
 | G5 Rotation | MKs are versioned. New records use the current version; old records remain decryptable; re-encryption can proceed lazily. A retired version can be destroyed to make its records unreadable (crypto-shredding). | A3 |
 | G6 Failure without oracle | Every decryption failure raises one error type carrying no information about *which* check failed. | A1, A2 |
@@ -92,4 +93,4 @@ This is not a compliance claim. The technical safeguards in 45 CFR §164.312 tha
 ## 8. Open questions for supervisor discussion
 
 - Should key commitment be a stated goal? AES-GCM is not key-committing; in a password-derived-key setting this enables partitioning-oracle attacks. Design-v2 §7 proposes a cheap commitment tag. Decide whether to include it in scope or note it as a limitation.
-- Is replay *within* the same context (old Alice ciphertext over new Alice ciphertext) in scope? Preventing it needs a monotonic counter or version in the context, which is application state. Current position: out of scope, documented as a limitation, with the rotation version giving partial protection.
+- Replay *within* the same context. Per-field replay inside a resource is now detected by the manifest (G3a). Replay of a *whole* resource, manifest included, by an older version of itself is not: preventing it needs a monotonic version in the context, which is application state. Documented as a limitation.

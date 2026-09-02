@@ -99,6 +99,11 @@ AES-GCM does not commit to its key: an adversary can craft one ciphertext that d
 - Each selected value is JSON-serialised, encrypted with `field_path` set to its canonical path (array indices collapsed to `[*]` so a note moving from index 0 to 1 does not break decryption while still binding the field kind), and replaced in place by the string `"cpdpm2:<base64url>"`.
 - The list of encrypted paths is recorded in `meta.tag` with system `urn:cpdpm:encrypted-paths`, which is where FHIR permits implementation metadata. The resource stays schema-valid JSON; typed validators will complain about a string where a `CodeableConcept` was, and that is accepted for the thesis. A search-safe variant (leave `code.coding[*].code` clear, encrypt `code.text`) is a configuration, not a code change.
 - Whole-resource mode uses `field_path = "*"`.
+- **Manifest (structural integrity).** Per-field AEAD binds each value to its path but not the set of values, so field deletion and per-field replay would go unnoticed. Every encrypted resource therefore carries a manifest, `{"v":1,"paths":[…],"entries":[[path, sha256(ciphertext)],…],"clear":digest|null}`, encrypted under `field_path="_manifest"` and stored as a `meta.tag` with system `urn:cpdpm:manifest`. Decryption verifies the manifest before releasing any field; the encrypted-paths tags are informational only. With `bind_cleartext=True`, `clear` is the digest of the resource with encrypted values blanked and cpdpm tags removed, so edits to clear fields are also detected. Whole-document replay (manifest included) is not covered; see threat model §8.
+
+### 8a. Streaming (`cpdpm.stream`)
+
+For payloads too large to hold in memory: STREAM (Hoang, Reyhanitabar, Rogaway, Vizár 2015) over the same per-context AEAD. Header `CPDS ‖ 0x02 ‖ suite ‖ key_version ‖ chunk_size ‖ prefix_len ‖ prefix`; chunk *i* uses nonce `prefix ‖ u32be(i) ‖ last_flag` with the header and canonical context as associated data; the 32-byte commitment is prepended to chunk 0. Truncation, extension, chunk drop, swap and duplication all fail authentication. Output is released per verified chunk, so consumers discard on error.
 
 ## 9. Public API
 
@@ -116,7 +121,7 @@ from cpdpm.fhir import encrypt_resource, decrypt_resource
 enc = encrypt_resource(keyring, tenant, resource, paths=POLICY["Condition"])
 ```
 
-Planned modules: `context.py`, `header.py`, `kdf.py`, `aead.py`, `keys.py`, `fhir.py`, `errors.py`. Everything raises `DecryptionError` on the decrypt path, with no message beyond a fixed string.
+Modules: `context.py`, `header.py`, `kdf.py`, `aead.py`, `keys.py`, `core.py`, `fhir.py`, `stream.py`, `errors.py`. Everything raises `DecryptionError` on the decrypt path, with no message beyond a fixed string.
 
 ## 10. Security argument (sketch for chapter 4)
 

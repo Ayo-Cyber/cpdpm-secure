@@ -1,0 +1,31 @@
+# Runs the chapter 5 evaluation on an x86-64 GitHub runner and uploads the JSON.
+# Manual trigger. Runner timing is noisier than a quiet workstation; the point is
+# the architecture, in particular an honest XChaCha number outside PyNaCl-on-arm64.
+name: benchmark-x86_64
+
+on:
+  workflow_dispatch:
+
+jobs:
+  bench:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install --upgrade pip
+      - run: pip install -e ".[dev,paper]"
+      - name: Record machine
+        run: |
+          mkdir -p paper/evaluation/results
+          { uname -a; lscpu; python -c "import platform;print(platform.python_version())"; } \
+            > paper/evaluation/results/machine_x86_64.txt
+      - run: python -m paper.evaluation.record_swap
+      - run: python -m paper.evaluation.benchmark -o paper/evaluation/results/bench_pyperf_x86_64.json --quiet
+      - run: python -m paper.evaluation.summarize paper/evaluation/results/bench_pyperf_x86_64.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: evaluation-x86_64
+          path: paper/evaluation/results/
