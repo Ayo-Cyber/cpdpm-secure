@@ -4,6 +4,19 @@ Plan from Wednesday 2 September to Friday 25 December 2026. The thesis paper is 
 
 Assumed effort: 15–20 hours per week, one person. Monday-start weeks; week 0 is the four days from 2 September.
 
+## Status, 2 September 2026
+
+Done on day one, all on branch `week0-foundations` (not pushed):
+
+- Week 0 foundations: repo restructured, threat model, design doc, venue shortlist, client correction draft, CI.
+- Week 2–3 analysis: four scripts, pinned results, fig 3-1 and 3-2.
+- Week 3–6 construction: `cpdpm/` core and FHIR layer, 64 tests on both suites, known-answer vectors.
+- Week 6–8 evaluation: attack matrix (table 5-1), first pyperf run, fig 5-1 and 5-2, Dockerfile.
+
+Which means the calendar below has roughly six weeks of slack. Spend it on the reading (weeks 1–5, unchanged: that is your work), on the writing, and on the red-team read. The writing is yours; the evidence, figures and outline are ready for it.
+
+Still open before the final run: full (non `--fast`) pyperf on the submission machine, XChaCha re-measured on x86-64, the critiqued-genre table for chapter 2.
+
 ## Under the tree on 25 December
 
 1. **Paper submitted** to the chosen venue, with the arXiv preprint live and citable.
