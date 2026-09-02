@@ -1,6 +1,6 @@
 # Legacy: CPDPM v1 (frozen)
 
-This folder is the code as it existed on 2 September 2026, including the `client_deliverable/` package handed to the client. It is kept unchanged as the object of study for the analysis chapter of the thesis. **Do not fix anything here.** If a defect matters, document it in `paper/analysis/` and demonstrate it against this code.
+This folder is the code as it existed on 2 September 2026, including the `client_deliverable/` package handed to the client. It is kept unchanged as the object of study for the analysis chapter of the thesis. **Do not fix anything here.** (One exception, made for the repository's secret scanner: a demo password literal in the notebook was replaced by a plain-words placeholder. Nothing else differs from what shipped.) If a defect matters, document it in `paper/analysis/` and demonstrate it against this code.
 
 ## Layout
 

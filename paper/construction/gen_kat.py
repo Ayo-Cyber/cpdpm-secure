@@ -20,7 +20,7 @@ from cpdpm.core import _encrypt_with_nonce
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / "tests" / "vectors" / "v2_kat.json"
 
-MASTER = bytes(range(1, 33))
+MASTER = bytes(range(1, 33))  # test vector key, never a secret; written to JSON as its recipe
 CTX = Context(
     tenant="org:st-marys", patient="Patient/8f3a", resource_type="Condition", field_path="code.text"
 )
