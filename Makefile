@@ -2,7 +2,7 @@ PY ?= python3
 VENV := .venv
 BIN := $(VENV)/bin
 
-.PHONY: setup test lint typecheck legacy-test legacy-setup analysis evaluation evaluation-fast figures all clean
+.PHONY: setup test coverage lint typecheck legacy-test legacy-setup analysis evaluation evaluation-fast figures all clean
 
 ## One-command setup: fresh virtualenv with the package and dev tools.
 setup:
@@ -13,6 +13,9 @@ setup:
 ## The gate. A fresh clone must pass this with no other steps.
 test:
 	$(BIN)/pytest
+
+coverage:
+	$(BIN)/pytest --cov --cov-report=term-missing
 
 lint:
 	$(BIN)/ruff check .
