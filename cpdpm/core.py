@@ -22,7 +22,7 @@ from cpdpm.header import Header, Suite
 from cpdpm.kdf import COMMIT_LEN, derive_commitment, derive_context_key
 from cpdpm.keys import Keyring
 
-TEXT_PREFIX = "cpdpm2:"
+TEXT_PREFIX = "cpdpm1:"
 
 
 def _encrypt_with_nonce(
@@ -74,7 +74,7 @@ def encrypt_to_str(
     suite: Suite = Suite.AES_256_GCM,
     key_version: int | None = None,
 ) -> str:
-    """Text form for JSON stores: ``cpdpm2:<base64url>``."""
+    """Text form for JSON stores: ``cpdpm1:<base64url>``."""
     blob = encrypt(keyring, ctx, plaintext, suite=suite, key_version=key_version)
     return TEXT_PREFIX + base64.urlsafe_b64encode(blob).rstrip(b"=").decode("ascii")
 
@@ -90,5 +90,5 @@ def decrypt_from_str(keyring: Keyring, ctx: Context, text: str) -> bytes:
     return decrypt(keyring, ctx, blob)
 
 
-def is_cpdpm2(text: str) -> bool:
+def is_cpdpm_text(text: str) -> bool:
     return text.startswith(TEXT_PREFIX)

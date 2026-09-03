@@ -1,4 +1,4 @@
-"""Master keys, versions, rotation, and wrapping. See ``docs/design-v2.md`` §4.
+"""Master keys, versions, rotation, and wrapping. See ``docs/design.md`` §4.
 
 A :class:`Keyring` holds one or more 32-byte master data keys indexed by
 version. New ciphertexts use ``current``; old versions stay for decryption

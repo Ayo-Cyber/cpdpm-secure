@@ -6,7 +6,7 @@ decrypting for the row it *believes* it is reading, silently gets data
 ("accepted") or gets an error ("rejected").
 
 Schemes
-  cbc-hmac  AES-256-CBC + HMAC-SHA256 under one shared key (typical legacy design)
+  cbc-hmac  AES-256-CBC + HMAC-SHA256 under one shared key (typical shared-key design)
   aes-gcm   AES-256-GCM, one key per tenant, random nonce, no associated data
   cpdpm     this work: per-context key + header||context as associated data
 
@@ -31,7 +31,7 @@ from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
 from cpdpm import Context, DecryptionError, Keyring, decrypt_from_str, encrypt_to_str
 from cpdpm.fhir import decrypt_resource, encrypt_resource
-from paper.analysis._legacy import write_result
+from paper.analysis._common import write_result
 from paper.evaluation.records import POLICY, load_rows, observation
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -47,7 +47,7 @@ TENANT_P, TENANT_Q = "org:st-marys", "org:riverside"
 
 
 class CbcHmac:
-    """Typical legacy design: AES-256-CBC + HMAC-SHA256 under one shared key, random IV."""
+    """Typical shared-key design: AES-256-CBC + HMAC-SHA256 under one shared key, random IV."""
 
     name = "AES-256-CBC + HMAC, one shared key"
 

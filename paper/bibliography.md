@@ -11,7 +11,7 @@ Starting points for the week 1–5 reading. These are real, well-known reference
 - Krawczyk, H., Eronen, P. "HMAC-based Extract-and-Expand Key Derivation Function (HKDF)." RFC 5869, 2010. Krawczyk's CRYPTO 2010 paper "Cryptographic Extraction and Key Derivation: The HKDF Scheme" for the proof.
 - McGrew, D. "An Interface and Algorithms for Authenticated Encryption." RFC 5116, 2008.
 - Biryukov, A., Dinu, D., Khovratovich, D., Josefsson, S. "Argon2 Memory-Hard Function for Password Hashing and Proof-of-Work Applications." RFC 9106, 2021.
-- Bellare, M., Namprempre, C. "Authenticated Encryption: Relations among Notions and Analysis of the Generic Composition Paradigm." ASIACRYPT 2000 / J. Cryptology 2008. For the encrypt-then-MAC argument about v1's construction.
+- Bellare, M., Namprempre, C. "Authenticated Encryption: Relations among Notions and Analysis of the Generic Composition Paradigm." ASIACRYPT 2000 / J. Cryptology 2008. For the encrypt-then-MAC baseline in chapter 5.
 
 ## Key commitment and the attack class it closes
 

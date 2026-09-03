@@ -1,13 +1,10 @@
-"""Chapter 3, finding 4: the honest cost of the v1 transform.
+"""Chapter 3: the cost of a byte-level pre-transform layer, measured fairly.
 
-Measures, with the KDF counted identically on both sides:
-
-* v1 library encrypt / decrypt (PBKDF2 + transform + AES-CBC + HMAC)
-* an otherwise identical baseline with the transform removed
-* each component alone: PBKDF2, AES-CBC+HMAC, the Python transform loop
-
-Reports medians and interquartile ranges over repeated runs. Not pyperf: this is
-a component decomposition, not a cross-library comparison (that is chapter 5).
+Compares a password-based AES-256-CBC + HMAC pipeline with and without a
+per-byte affine pre-transform, counting the key derivation identically on both
+sides and in both directions. Also times each component alone so the source
+of any overhead is visible. Medians and interquartile ranges over repeated
+runs. Cross-library comparison is chapter 5's job, not this script's.
 
 Run: python -m paper.analysis.fair_benchmark
 """
@@ -26,11 +23,8 @@ from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.hazmat.primitives.padding import PKCS7
 
-from paper.analysis._legacy import add_legacy_paths, write_result
-
-add_legacy_paths()
-
-from cpdpm_hybrid import CPDPMHybrid  # noqa: E402
+from paper.analysis._common import write_result
+from paper.analysis.pre_transform import affine_forward, affine_inverse
 
 SIZES = [1024, 8 * 1024, 64 * 1024, 512 * 1024]
 REPS = 15
@@ -62,16 +56,19 @@ def aes_cbc_hmac_decrypt(key: bytes, iv: bytes, ct: bytes, tag: bytes) -> bytes:
     return unpadder.update(padded) + unpadder.finalize()
 
 
-def baseline_encrypt(data: bytes) -> dict:
+def pipeline_encrypt(data: bytes, transform: bool) -> dict:
     salt = os.urandom(16)
     key = kdf(PASSWORD.encode(), salt)
-    iv, ct, tag = aes_cbc_hmac_encrypt(key, data)
-    return {"salt": salt, "iv": iv, "ct": ct, "tag": tag}
+    a, b = os.urandom(1)[0], os.urandom(1)[0]
+    body = affine_forward(data, a, b) if transform else data
+    iv, ct, tag = aes_cbc_hmac_encrypt(key, body)
+    return {"salt": salt, "iv": iv, "ct": ct, "tag": tag, "a": a, "b": b, "t": transform}
 
 
-def baseline_decrypt(pkg: dict) -> bytes:
+def pipeline_decrypt(pkg: dict) -> bytes:
     key = kdf(PASSWORD.encode(), pkg["salt"])
-    return aes_cbc_hmac_decrypt(key, pkg["iv"], pkg["ct"], pkg["tag"])
+    body = aes_cbc_hmac_decrypt(key, pkg["iv"], pkg["ct"], pkg["tag"])
+    return affine_inverse(body, pkg["a"], pkg["b"]) if pkg["t"] else body
 
 
 def timeit(fn: Callable[[], object], reps: int = REPS) -> dict:
@@ -91,39 +88,37 @@ def timeit(fn: Callable[[], object], reps: int = REPS) -> dict:
 
 
 def main() -> None:
-    v1 = CPDPMHybrid()
-    poly = v1.cpdpm_core.poly_engine
-    poly_key = poly.generate_polynomial_key()
     fixed_key = kdf(PASSWORD.encode(), b"\x00" * 16)
 
     def measure(size: int) -> dict:
         data = os.urandom(size)
-        v1_pkg = v1.encrypt(data, PASSWORD, "patient:001")
-        base_pkg = baseline_encrypt(data)
-        return {
-            "v1_encrypt": timeit(lambda: v1.encrypt(data, PASSWORD, "patient:001")),
-            "v1_decrypt": timeit(lambda: v1.decrypt(v1_pkg, PASSWORD)),
-            "baseline_encrypt": timeit(lambda: baseline_encrypt(data)),
-            "baseline_decrypt": timeit(lambda: baseline_decrypt(base_pkg)),
+        with_t = pipeline_encrypt(data, True)
+        without = pipeline_encrypt(data, False)
+        r = {
+            "with_transform_encrypt": timeit(lambda: pipeline_encrypt(data, True)),
+            "with_transform_decrypt": timeit(lambda: pipeline_decrypt(with_t)),
+            "baseline_encrypt": timeit(lambda: pipeline_encrypt(data, False)),
+            "baseline_decrypt": timeit(lambda: pipeline_decrypt(without)),
             "component_pbkdf2": timeit(lambda: kdf(PASSWORD.encode(), b"\x00" * 16)),
             "component_aes_cbc_hmac_encrypt": timeit(lambda: aes_cbc_hmac_encrypt(fixed_key, data)),
-            "component_transform_loop": timeit(lambda: poly.polynomial_transform(data, poly_key)),
+            "component_transform_loop": timeit(lambda: affine_forward(data, 7, 11)),
+            "component_inverse_loop": timeit(lambda: affine_inverse(data, 7, 11)),
         }
+        r["ratio_encrypt"] = (
+            r["with_transform_encrypt"]["median_ms"] / r["baseline_encrypt"]["median_ms"]
+        )
+        r["ratio_decrypt"] = (
+            r["with_transform_decrypt"]["median_ms"] / r["baseline_decrypt"]["median_ms"]
+        )
+        return r
 
     per_size = {}
     for size in SIZES:
         per_size[str(size)] = measure(size)
         r = per_size[str(size)]
-        r["ratio_v1_over_baseline_encrypt"] = (
-            r["v1_encrypt"]["median_ms"] / r["baseline_encrypt"]["median_ms"]
-        )
-        r["ratio_v1_over_baseline_decrypt"] = (
-            r["v1_decrypt"]["median_ms"] / r["baseline_decrypt"]["median_ms"]
-        )
         print(
-            f"{size:>7} B  v1/base encrypt {r['ratio_v1_over_baseline_encrypt']:.2f}x  "
-            f"decrypt {r['ratio_v1_over_baseline_decrypt']:.2f}x  "
-            f"(pbkdf2 {r['component_pbkdf2']['median_ms']:.1f} ms, "
+            f"{size:>7} B  with/without encrypt {r['ratio_encrypt']:.2f}x  "
+            f"decrypt {r['ratio_decrypt']:.2f}x  (pbkdf2 {r['component_pbkdf2']['median_ms']:.1f} ms, "  # noqa: E501
             f"loop {r['component_transform_loop']['median_ms']:.1f} ms)"
         )
 
@@ -134,8 +129,8 @@ def main() -> None:
             "reps": REPS,
             "pbkdf2_iterations": 100_000,
             "per_size": per_size,
-            "note": "baseline = v1 with the transform removed; KDF counted on both sides "
-            "for both directions",
+            "note": "same pipeline with and without the pre-transform; KDF counted on both sides "
+            "in both directions",
         },
     )
 

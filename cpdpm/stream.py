@@ -10,7 +10,7 @@ all fail authentication.
 Wire format::
 
     0   4   magic "CPDS"
-    4   1   protocol version = 0x02
+    4   1   protocol version = 0x01
     5   1   suite
     6   4   key_version (u32be)
     10  4   chunk_size (u32be), plaintext bytes per chunk
@@ -37,7 +37,7 @@ from cpdpm.kdf import COMMIT_LEN, derive_commitment, derive_context_key
 from cpdpm.keys import Keyring
 
 MAGIC = b"CPDS"
-PROTOCOL_VERSION = 2
+PROTOCOL_VERSION = 1
 FIXED_LEN = 15
 DEFAULT_CHUNK = 1 << 20
 MAX_CHUNK = 64 << 20

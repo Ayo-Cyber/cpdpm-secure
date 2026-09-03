@@ -123,12 +123,14 @@ def test_key_version_tamper_rejected(keyring: Keyring) -> None:
 
 def test_text_form(keyring: Keyring) -> None:
     text = encrypt_to_str(keyring, CTX, b"hello")
-    assert text.startswith("cpdpm2:")
+    assert text.startswith("cpdpm1:")
     assert decrypt_from_str(keyring, CTX, text) == b"hello"
     with pytest.raises(DecryptionError):
-        decrypt_from_str(keyring, CTX, "cpdpm2:!!!not base64!!!")
+        decrypt_from_str(keyring, CTX, "cpdpm1:!!!not base64!!!")
     with pytest.raises(DecryptionError):
-        decrypt_from_str(keyring, CTX, "eyJ2ZXJzaW9uIjogIjEuMCJ9")  # a v1-style base64 JSON
+        decrypt_from_str(
+            keyring, CTX, "eyJ2ZXJzaW9uIjogIjEuMCJ9"
+        )  # a base64 JSON blob from another scheme
 
 
 def test_garbage_never_leaks_exception_type(keyring: Keyring) -> None:

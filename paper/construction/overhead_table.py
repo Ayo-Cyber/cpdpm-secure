@@ -55,7 +55,7 @@ def main() -> None:
     lines.append("")
     lines.append(
         "Blob overhead is constant: 11-byte header + nonce (12 or 24) + 32-byte commitment + 16-byte tag. "  # noqa: E501
-        "Text form adds the 7-byte `cpdpm2:` prefix and base64url expansion (one third of the blob). "  # noqa: E501
+        "Text form adds the 7-byte `cpdpm1:` prefix and base64url expansion (one third of the blob). "  # noqa: E501
         "Stream overhead is 15 + prefix + 32 + 16 bytes per chunk."
     )
     FIGURES.mkdir(parents=True, exist_ok=True)

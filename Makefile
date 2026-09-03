@@ -2,7 +2,7 @@ PY ?= python3
 VENV := .venv
 BIN := $(VENV)/bin
 
-.PHONY: setup test coverage lint typecheck legacy-test legacy-setup analysis evaluation evaluation-fast figures diagrams all clean
+.PHONY: setup test coverage lint typecheck analysis evaluation evaluation-fast figures diagrams all clean
 
 ## One-command setup: fresh virtualenv with the package and dev tools.
 setup:
@@ -24,19 +24,9 @@ lint:
 typecheck:
 	$(BIN)/mypy
 
-## Legacy v1 is frozen. Its suite has two known failures (context-key
-## non-determinism) that are evidence for the analysis chapter; do not fix them.
-legacy-setup:
-	$(BIN)/pip install -q -r legacy/requirements.txt
-
-legacy-test:
-	$(BIN)/pytest legacy/tests/test_cpdpm_comprehensive.py -q -p no:cacheprovider || true
-
 ## Chapter 3: every number in the analysis chapter comes from these scripts.
 analysis:
-	$(BIN)/python -m paper.analysis.affine_map
-	$(BIN)/python -m paper.analysis.context_key
-	$(BIN)/python -m paper.analysis.client_build
+	$(BIN)/python -m paper.analysis.pre_transform
 	$(BIN)/python -m paper.analysis.fair_benchmark
 
 ## Chapter 5: attack matrix and pyperf benchmarks (needs `pip install tink`).

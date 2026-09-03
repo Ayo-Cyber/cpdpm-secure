@@ -67,7 +67,7 @@ def test_context_only_raises_context_error(a: str, b: str, c: str, d: str, e: st
     except ContextError:
         return
     canon = ctx.canonical()
-    assert canon[0] == 0x02
+    assert canon[0] == 0x01
     assert canon == Context(a, b, c, d, e).canonical()
 
 

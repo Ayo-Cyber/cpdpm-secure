@@ -52,7 +52,7 @@
   <polygon points="594,320 606,320 600,330" fill="#52514e"/>
 
   <rect x="430" y="330" width="340" height="50" rx="6" fill="#ffffff" stroke="#eda100" stroke-width="1.5"/>
-  <text x="450" y="351" font-size="12" font-family="Menlo, Consolas, monospace" fill="#0b0b0b">0x02 || len||tenant || len||patient || ...</text>
+  <text x="450" y="351" font-size="12" font-family="Menlo, Consolas, monospace" fill="#0b0b0b">0x01 || len||tenant || len||patient || ...</text>
   <text x="450" y="370" font-size="12.5" fill="#52514e">canon(ctx): length-prefixed, NFC-normalised, injective</text>
 
   <line x1="600" y1="380" x2="600" y2="402" stroke="#52514e" stroke-width="2"/>
@@ -60,7 +60,7 @@
 
   <rect x="430" y="410" width="340" height="60" rx="6" fill="#e6f0fb" stroke="#2a78d6" stroke-width="1.5"/>
   <text x="450" y="436" font-size="17" font-weight="700" fill="#0b0b0b">HKDF-SHA256</text>
-  <text x="450" y="458" font-size="11.5" font-family="Menlo, Consolas, monospace" fill="#52514e">info = "cpdpm/v2/key" || suite || canon(ctx)</text>
+  <text x="450" y="458" font-size="11.5" font-family="Menlo, Consolas, monospace" fill="#52514e">info = "cpdpm/key" || suite || canon(ctx)</text>
 
   <line x1="580" y1="470" x2="580" y2="502" stroke="#52514e" stroke-width="2"/>
   <polygon points="574,500 586,500 580,510" fill="#52514e"/>
@@ -71,7 +71,7 @@
   <polygon points="740,584 740,596 730,590" fill="#52514e"/>
   <rect x="430" y="570" width="300" height="40" rx="6" fill="#ffffff" stroke="#eda100" stroke-width="1.5"/>
   <text x="450" y="596" font-size="15" font-weight="700" fill="#0b0b0b">commit <tspan font-weight="400" font-size="13.5" fill="#52514e">key commitment, 32 bytes</tspan></text>
-  <text x="430" y="632" font-size="11.5" font-family="Menlo, Consolas, monospace" fill="#52514e">info = "cpdpm/v2/commit" || canon(ctx)</text>
+  <text x="430" y="632" font-size="11.5" font-family="Menlo, Consolas, monospace" fill="#52514e">info = "cpdpm/commit" || canon(ctx)</text>
 
   <!-- ===== column 3: encryption ===== -->
   <rect x="820" y="150" width="340" height="64" rx="6" fill="#f1f1ef" stroke="#8a8a86" stroke-width="1.5"/>

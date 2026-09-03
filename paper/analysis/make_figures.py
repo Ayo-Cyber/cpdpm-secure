@@ -1,6 +1,6 @@
 """Chapter 3 figures, generated from paper/analysis/results/*.json.
 
-fig3-1  v1 vs transform-free baseline, encrypt and decrypt, KDF counted equally.
+fig3-1  pipeline with vs without a pre-transform layer, KDF counted equally.
 fig3-2  Where the time goes: PBKDF2, AES-CBC+HMAC, the Python transform loop.
 
 Run: python -m paper.analysis.make_figures
@@ -14,7 +14,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 import numpy as np  # noqa: E402
 
-from paper.analysis._legacy import FIGURES, read_result  # noqa: E402
+from paper.analysis._common import FIGURES, read_result  # noqa: E402
 
 # Categorical slots, fixed order, validated for CVD separation on a white surface.
 BLUE, ORANGE, AQUA = "#2a78d6", "#eb6834", "#1baf7a"
@@ -56,26 +56,26 @@ def fig_ratio(res: dict) -> None:
     w = 0.38
     fig, axes = plt.subplots(1, 2, figsize=(7.2, 2.9), sharey=True)
     for ax, op in zip(axes, ("encrypt", "decrypt"), strict=True):
-        v1 = [res["per_size"][str(s)][f"v1_{op}"] for s in sizes]
+        with_t = [res["per_size"][str(s)][f"with_transform_{op}"] for s in sizes]
         base = [res["per_size"][str(s)][f"baseline_{op}"] for s in sizes]
         for off, series, color, label in (
-            (-w / 2, v1, BLUE, "CPDPM v1 (with transform)"),
-            (w / 2, base, ORANGE, "Same pipeline, transform removed"),
+            (-w / 2, with_t, BLUE, "With pre-transform layer"),
+            (w / 2, base, ORANGE, "Same pipeline without it"),
         ):
             med = [d["median_ms"] for d in series]
             err = np.array([_iqr(d) for d in series]).T
             ax.bar(x + off, med, w, color=color, label=label, edgecolor="white", linewidth=1)
             ax.errorbar(x + off, med, yerr=err, fmt="none", ecolor=INK2, elinewidth=0.8, capsize=2)
         for i, s in enumerate(sizes):
-            r = res["per_size"][str(s)][f"ratio_v1_over_baseline_{op}"]
-            top = max(v1[i]["p75_ms"], base[i]["p75_ms"])
+            r = res["per_size"][str(s)][f"ratio_{op}"]
+            top = max(with_t[i]["p75_ms"], base[i]["p75_ms"])
             ax.text(x[i], top * 1.04, f"{r:.2f}×", ha="center", va="bottom", color=INK, fontsize=8)
         ax.set_xticks(x, [_size_label(s) for s in sizes])
         ax.set_title(op.capitalize(), loc="left", color=INK, fontsize=10)
     axes[0].set_ylabel("Time (ms), median with IQR")
     axes[0].legend(loc="upper left", fontsize=8)
     fig.suptitle(
-        "KDF counted on both sides: the transform is free at record sizes, costly at file sizes",
+        "A pre-transform layer is free at record sizes and a pure-Python tax at file sizes",
         x=0.01,
         ha="left",
         fontsize=10,
@@ -83,7 +83,7 @@ def fig_ratio(res: dict) -> None:
     )
     fig.tight_layout(rect=(0, 0, 1, 0.9))
     for ext in ("pdf", "png"):
-        fig.savefig(FIGURES / f"fig3-1_v1_vs_baseline.{ext}")
+        fig.savefig(FIGURES / f"fig3-1_pre_transform_cost.{ext}")
     plt.close(fig)
 
 
@@ -103,14 +103,16 @@ def fig_decomposition(res: dict) -> None:
             x, vals, 0.55, bottom=bottom, color=color, label=label, edgecolor="white", linewidth=1
         )
         bottom += vals
-    total = [res["per_size"][str(s)]["v1_encrypt"]["median_ms"] for s in sizes]
-    ax.scatter(x, total, marker="_", s=260, color=INK, zorder=3, label="Measured v1 encrypt")
+    total = [res["per_size"][str(s)]["with_transform_encrypt"]["median_ms"] for s in sizes]
+    ax.scatter(x, total, marker="_", s=260, color=INK, zorder=3, label="Measured pipeline encrypt")
     ax.set_xticks(x, [_size_label(s) for s in sizes])
     ax.set_ylabel("Time (ms), medians")
-    ax.set_title("Where a v1 encryption spends its time", loc="left", color=INK, fontsize=10)
+    ax.set_title(
+        "Where a pre-transform pipeline spends its time", loc="left", color=INK, fontsize=10
+    )
     ax.legend(fontsize=8, loc="upper left")
     for ext in ("pdf", "png"):
-        fig.savefig(FIGURES / f"fig3-2_v1_time_decomposition.{ext}")
+        fig.savefig(FIGURES / f"fig3-2_time_decomposition.{ext}")
     plt.close(fig)
 
 

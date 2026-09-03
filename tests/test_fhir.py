@@ -39,9 +39,9 @@ def test_roundtrip_restores_exact_resource(keyring: Keyring) -> None:
     original = copy.deepcopy(CONDITION)
     enc = encrypt_resource(keyring, TENANT, CONDITION, POLICY)
     assert CONDITION == original, "input must not be mutated"
-    assert enc["code"]["text"].startswith("cpdpm2:")
-    assert all(n["text"].startswith("cpdpm2:") for n in enc["note"])
-    assert enc["evidence"][0]["detail"][1]["display"].startswith("cpdpm2:")
+    assert enc["code"]["text"].startswith("cpdpm1:")
+    assert all(n["text"].startswith("cpdpm1:") for n in enc["note"])
+    assert enc["evidence"][0]["detail"][1]["display"].startswith("cpdpm1:")
     assert enc["code"]["coding"] == CONDITION["code"]["coding"], "unselected fields stay clear"
     recorded = {t["code"] for t in enc["meta"]["tag"] if t["system"] == TAG_SYSTEM}
     assert recorded == set(POLICY)
@@ -141,7 +141,7 @@ def test_tenant_level_resource(keyring: Keyring) -> None:
 
 def test_whole_resource(keyring: Keyring) -> None:
     text = encrypt_resource_whole(keyring, TENANT, CONDITION)
-    assert text.startswith("cpdpm2:")
+    assert text.startswith("cpdpm1:")
     out = decrypt_resource_whole(
         keyring, TENANT, text, resource_type="Condition", patient="Patient/alice"
     )

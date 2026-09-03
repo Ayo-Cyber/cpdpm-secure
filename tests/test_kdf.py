@@ -38,10 +38,10 @@ def test_argon2id_master_key() -> None:
         master_from_password(b"x", b"short", params)
 
 
-def test_pbkdf2_legacy_path_warns() -> None:
+def test_pbkdf2_migration_path_warns() -> None:
     salt = os.urandom(16)
     with pytest.warns(DeprecationWarning):
-        k = master_from_password_pbkdf2(b"legacy password", salt)
+        k = master_from_password_pbkdf2(b"migrated password", salt)
     assert len(k) == 32
     with pytest.raises(ValueError), pytest.warns(DeprecationWarning):
         master_from_password_pbkdf2(b"x", b"short")

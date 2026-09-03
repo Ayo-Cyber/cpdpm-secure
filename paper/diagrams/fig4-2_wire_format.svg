@@ -15,7 +15,7 @@
   <text x="85" y="254" font-size="12.5" fill="#52514e" text-anchor="middle">4 B</text>
   <!-- version -->
   <rect x="130" y="175" width="60" height="60" fill="#f1f1ef" stroke="#8a8a86" stroke-width="1.5"/>
-  <text x="160" y="210" font-size="14" font-family="Menlo, Consolas, monospace" fill="#0b0b0b" text-anchor="middle">0x02</text>
+  <text x="160" y="210" font-size="14" font-family="Menlo, Consolas, monospace" fill="#0b0b0b" text-anchor="middle">0x01</text>
     <text x="160" y="254" font-size="12.5" fill="#52514e" text-anchor="middle">1 B</text>
   <!-- suite -->
   <rect x="190" y="175" width="60" height="60" fill="#f1f1ef" stroke="#8a8a86" stroke-width="1.5"/>
@@ -67,7 +67,7 @@
   <rect x="40" y="450" width="80" height="56" fill="#f1f1ef" stroke="#8a8a86" stroke-width="1.5"/>
   <text x="80" y="483" font-size="13" font-family="Menlo, Consolas, monospace" fill="#0b0b0b" text-anchor="middle">"CPDS"</text>
   <rect x="120" y="450" width="50" height="56" fill="#f1f1ef" stroke="#8a8a86" stroke-width="1.5"/>
-  <text x="145" y="483" font-size="13" font-family="Menlo, Consolas, monospace" fill="#0b0b0b" text-anchor="middle">0x02</text>
+  <text x="145" y="483" font-size="13" font-family="Menlo, Consolas, monospace" fill="#0b0b0b" text-anchor="middle">0x01</text>
   <rect x="170" y="450" width="56" height="56" fill="#f1f1ef" stroke="#8a8a86" stroke-width="1.5"/>
   <text x="198" y="483" font-size="13" font-family="Menlo, Consolas, monospace" fill="#0b0b0b" text-anchor="middle">suite</text>
   <rect x="226" y="450" width="90" height="56" fill="#f1f1ef" stroke="#8a8a86" stroke-width="1.5"/>

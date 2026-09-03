@@ -1,7 +1,7 @@
 """cpdpm: context-bound authenticated encryption for clinical records.
 
-Protocol version 2 replaces the shipped v1 (see ``legacy/``). Specification in
-``docs/design-v2.md``; threat model in ``docs/threat-model.md``.
+Protocol version 1. Specification in ``docs/design.md``; threat model in
+``docs/threat-model.md``.
 
 Minimal use::
 
@@ -15,7 +15,7 @@ Minimal use::
 """
 
 from cpdpm.context import Context
-from cpdpm.core import decrypt, decrypt_from_str, encrypt, encrypt_to_str, is_cpdpm2
+from cpdpm.core import decrypt, decrypt_from_str, encrypt, encrypt_to_str, is_cpdpm_text
 from cpdpm.errors import (
     ContextError,
     CPDPMError,
@@ -45,5 +45,5 @@ __all__ = [
     "decrypt_from_str",
     "encrypt",
     "encrypt_to_str",
-    "is_cpdpm2",
+    "is_cpdpm_text",
 ]

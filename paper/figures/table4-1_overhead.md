@@ -7,4 +7,4 @@
 | 67,113 B | +71 B | +22,473 B | +83 B | +22,489 B | +86 B |
 | 669,830 B | +71 B | +223,379 B | +83 B | +223,395 B | +230 B |
 
-Blob overhead is constant: 11-byte header + nonce (12 or 24) + 32-byte commitment + 16-byte tag. Text form adds the 7-byte `cpdpm2:` prefix and base64url expansion (one third of the blob). Stream overhead is 15 + prefix + 32 + 16 bytes per chunk.
+Blob overhead is constant: 11-byte header + nonce (12 or 24) + 32-byte commitment + 16-byte tag. Text form adds the 7-byte `cpdpm1:` prefix and base64url expansion (one third of the blob). Stream overhead is 15 + prefix + 32 + 16 bytes per chunk.

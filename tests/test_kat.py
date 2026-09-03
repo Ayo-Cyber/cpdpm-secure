@@ -8,7 +8,7 @@ import pytest
 from cpdpm import Context, Keyring, Suite, decrypt
 from cpdpm.core import _encrypt_with_nonce
 
-VECTORS = json.loads((Path(__file__).parent / "vectors" / "v2_kat.json").read_text())
+VECTORS = json.loads((Path(__file__).parent / "vectors" / "kat.json").read_text())
 MASTER = bytes(range(1, 33))  # public test-vector key; the JSON stores its recipe, not the bytes
 
 

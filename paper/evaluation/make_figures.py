@@ -1,7 +1,7 @@
 """Chapter 5 figures and tables from paper/evaluation/results/.
 
 fig5-1   encrypt and decrypt medians per scheme and payload size (log scale)
-fig5-2   overhead of v2 over raw AES-GCM as a ratio, by payload size
+fig5-2   overhead of CPDPM over raw AES-GCM as a ratio, by payload size
 table5-1 the attack matrix as Markdown (paper/figures/table5-1_attack_matrix.md)
 
 Run: python -m paper.evaluation.make_figures
@@ -27,15 +27,15 @@ COLORS = {
     "aes-gcm": "#2a78d6",
     "fernet": "#eb6834",
     "tink": "#1baf7a",
-    "v2-gcm": "#eda100",
-    "v2-xchacha": "#e87ba4",
+    "cpdpm-gcm": "#eda100",
+    "cpdpm-xchacha": "#e87ba4",
 }
 LABELS = {
     "aes-gcm": "AES-256-GCM (raw)",
     "fernet": "Fernet",
     "tink": "Tink AES-256-GCM",
-    "v2-gcm": "CPDPM v2, GCM",
-    "v2-xchacha": "CPDPM v2, XChaCha",
+    "cpdpm-gcm": "CPDPM, AES-GCM",
+    "cpdpm-xchacha": "CPDPM, XChaCha",
 }
 INK, INK2, GRID = "#0b0b0b", "#52514e", "#e6e6e3"
 plt.rcParams.update(
@@ -105,7 +105,7 @@ def fig_latency(rows: list[dict]) -> None:  # type: ignore[type-arg]
 def fig_overhead(rows: list[dict]) -> None:  # type: ignore[type-arg]
     sizes = sorted({r["n"] for r in rows})
     fig, ax = plt.subplots(figsize=(5.4, 3.0))
-    for s in ("v2-gcm", "v2-xchacha", "tink", "fernet"):
+    for s in ("cpdpm-gcm", "cpdpm-xchacha", "tink", "fernet"):
         pts = []
         for n in sizes:
             enc = next(
@@ -117,7 +117,7 @@ def fig_overhead(rows: list[dict]) -> None:  # type: ignore[type-arg]
             f"{pts[-1]:.1f}×",
             (sizes[-1], pts[-1]),
             textcoords="offset points",
-            xytext=(6, {"v2-gcm": 6, "tink": -6}.get(s, 0)),
+            xytext=(6, {"cpdpm-gcm": 6, "tink": -6}.get(s, 0)),
             va="center",
             fontsize=8,
             color=INK,
