@@ -1,4 +1,4 @@
-# Red-team review of CPDPM v2, September 2026
+# Red-team review of CPDPM, September 2026
 
 Self-review of the design and code before external eyes see it. Each finding records what was wrong, how it was found, what changed, and whether it becomes a test or a stated limitation. Severity is relative to the threat model in [threat-model.md](threat-model.md).
 

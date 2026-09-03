@@ -7,8 +7,8 @@ Schemes (all with pre-established keys; no password KDF on the hot path):
   aes-gcm     cryptography AESGCM, random 96-bit nonce, no AAD   (floor)
   fernet      cryptography Fernet (AES-128-CBC + HMAC, base64)
   tink        Google Tink AEAD, AES256_GCM key template
-  v2-gcm      cpdpm, AES-256-GCM suite (HKDF per call + commitment + AAD)
-  v2-xchacha  cpdpm, XChaCha20-Poly1305 suite
+  cpdpm-gcm      cpdpm, AES-256-GCM suite (HKDF per call + commitment + AAD)
+  cpdpm-xchacha  cpdpm, XChaCha20-Poly1305 suite
 
 Plus, for the single-observation payload only, the FHIR field-level path with
 three encrypted fields, to price per-field HKDF.
@@ -66,11 +66,11 @@ def schemes() -> dict[str, tuple[Callable[[bytes], bytes], Callable[[bytes], byt
         "aes-gcm": (gcm_enc, gcm_dec),
         "fernet": (fernet.encrypt, fernet.decrypt),
         "tink": (lambda pt: tink_prim.encrypt(pt, b""), lambda ct: tink_prim.decrypt(ct, b"")),
-        "v2-gcm": (
+        "cpdpm-gcm": (
             lambda pt: encrypt(kr, CTX, pt, suite=Suite.AES_256_GCM),
             lambda ct: decrypt(kr, CTX, ct),
         ),
-        "v2-xchacha": (
+        "cpdpm-xchacha": (
             lambda pt: encrypt(kr, CTX, pt, suite=Suite.XCHACHA20_POLY1305),
             lambda ct: decrypt(kr, CTX, ct),
         ),
@@ -93,10 +93,10 @@ def main() -> None:
     obs = observation(load_rows(1)[0])
     enc_doc = encrypt_resource(kr, TENANT, obs, POLICY)
     runner.bench_func(
-        "v2-fhir-fields/encrypt/n=1/fields=3", encrypt_resource, kr, TENANT, obs, POLICY
+        "cpdpm-fhir-fields/encrypt/n=1/fields=3", encrypt_resource, kr, TENANT, obs, POLICY
     )
     runner.bench_func(
-        "v2-fhir-fields/decrypt/n=1/fields=3",
+        "cpdpm-fhir-fields/decrypt/n=1/fields=3",
         lambda: decrypt_resource(kr, TENANT, enc_doc, patient="Patient/9046"),
     )
 

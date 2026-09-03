@@ -1,9 +1,9 @@
-"""Field-level encryption of FHIR JSON resources. See ``docs/design-v2.md`` §8.
+"""Field-level encryption of FHIR JSON resources. See ``docs/design.md`` §8.
 
 A policy is a list of paths such as ``"code.text"`` or ``"note[*].text"``. Each
 matched value is JSON-serialised, encrypted under a context whose
 ``field_path`` is the canonical path (array indices collapsed to ``[*]``), and
-replaced in place by a ``cpdpm2:`` string.
+replaced in place by a ``cpdpm1:`` string.
 
 Structural integrity. Per-field AEAD binds each value to its path, but not the
 *set* of values: an adversary could delete an encrypted note, or put back an
@@ -260,7 +260,7 @@ def encrypt_resource_whole(
     purpose: str = "",
     suite: Suite = Suite.AES_256_GCM,
 ) -> str:
-    """Encrypt an entire resource as one opaque ``cpdpm2:`` string (field_path ``"*"``)."""
+    """Encrypt an entire resource as one opaque ``cpdpm1:`` string (field_path ``"*"``)."""
     rtype = str(resource["resourceType"])
     pat = derive_patient(resource) if patient is None else patient
     ctx = Context(tenant, pat, rtype, WHOLE, purpose)

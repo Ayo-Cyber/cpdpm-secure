@@ -9,8 +9,7 @@ COPY pyproject.toml README.md LICENSE Makefile ./
 COPY cpdpm ./cpdpm
 COPY tests ./tests
 COPY paper ./paper
-COPY legacy ./legacy
 COPY data ./data
 RUN python -m venv .venv && .venv/bin/pip install -q --upgrade pip \
- && .venv/bin/pip install -q -e ".[dev,paper]" && .venv/bin/pip install -q -r legacy/requirements.txt
+ && .venv/bin/pip install -q -e ".[dev,paper]"
 CMD ["make", "all"]

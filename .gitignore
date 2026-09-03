@@ -184,3 +184,7 @@ cython_debug/
 
 # experiment outputs (pinned final runs are force-added)
 paper/*/results/
+
+# browser preview artefacts
+.playwright-mcp/
+sheet-*.png

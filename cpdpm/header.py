@@ -1,10 +1,10 @@
-"""Wire format header. See ``docs/design-v2.md`` §5.
+"""Wire format header. See ``docs/design.md`` §5.
 
 ::
 
     offset  size  field
     0       4     magic  "CPDM"
-    4       1     protocol version = 0x02
+    4       1     protocol version = 0x01
     5       1     suite
     6       4     key_version (u32be)
     10      1     nonce_len
@@ -20,7 +20,7 @@ from dataclasses import dataclass
 from enum import IntEnum
 
 MAGIC = b"CPDM"
-PROTOCOL_VERSION = 2
+PROTOCOL_VERSION = 1
 FIXED_LEN = 11
 TAG_LEN = 16
 

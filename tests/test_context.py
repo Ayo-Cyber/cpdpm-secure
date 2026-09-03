@@ -65,4 +65,4 @@ def test_field_too_long() -> None:
 
 def test_encoding_layout() -> None:
     c = Context("ab", "", "R", "f", "")
-    assert c.canonical() == bytes([0x02, 0, 2, *b"ab", 0, 0, 0, 1, *b"R", 0, 1, *b"f", 0, 0])
+    assert c.canonical() == bytes([0x01, 0, 2, *b"ab", 0, 0, 0, 1, *b"R", 0, 1, *b"f", 0, 0])

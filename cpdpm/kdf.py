@@ -1,11 +1,11 @@
-"""Key derivation. See ``docs/design-v2.md`` §4, §6, §7.
+"""Key derivation. See ``docs/design.md`` §4, §6, §7.
 
 * Per-context keys and commitments come from HKDF-SHA256 over a uniformly
   random master key. Empty salt is fine for uniformly random input keying
   material; the context and the suite go in ``info``.
 * Password-derived master keys use Argon2id (optional dependency
-  ``argon2-cffi``). PBKDF2 at 600,000 iterations exists only to migrate v1
-  deployments and warns on use.
+  ``argon2-cffi``). PBKDF2 at 600,000 iterations exists only for migrating deployments
+  that already hold PBKDF2-derived keys, and warns on use.
 """
 
 from __future__ import annotations
@@ -23,8 +23,8 @@ from cpdpm.header import Suite
 
 KEY_LEN = 32
 COMMIT_LEN = 32
-_INFO_KEY = b"cpdpm/v2/key"
-_INFO_COMMIT = b"cpdpm/v2/commit"
+_INFO_KEY = b"cpdpm/key"
+_INFO_COMMIT = b"cpdpm/commit"
 PBKDF2_ITERATIONS = 600_000
 
 
@@ -70,7 +70,7 @@ def master_from_password(password: bytes, salt: bytes, params: Argon2Params | No
 
 
 def master_from_password_pbkdf2(password: bytes, salt: bytes) -> bytes:
-    """PBKDF2-HMAC-SHA256 at 600k iterations. For migrating v1 deployments only."""
+    """PBKDF2-HMAC-SHA256 at 600k iterations. Migration path only; prefer Argon2id."""
     warnings.warn(
         "PBKDF2 is a compatibility path; use master_from_password (Argon2id)",
         DeprecationWarning,

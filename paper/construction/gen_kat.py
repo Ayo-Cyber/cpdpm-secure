@@ -1,4 +1,4 @@
-"""Generate known-answer vectors for protocol v2 into tests/vectors/v2_kat.json.
+"""Generate known-answer vectors for protocol version 1 into tests/vectors/kat.json.
 
 Fixed master key and fixed nonces make the output reproducible. The test in
 ``tests/test_kat.py`` checks that decrypting each vector yields the plaintext
@@ -18,7 +18,7 @@ from cpdpm import Context, Keyring, Suite
 from cpdpm.core import _encrypt_with_nonce
 
 ROOT = Path(__file__).resolve().parents[2]
-OUT = ROOT / "tests" / "vectors" / "v2_kat.json"
+OUT = ROOT / "tests" / "vectors" / "kat.json"
 
 MASTER = bytes(range(1, 33))  # test vector key, never a secret; written to JSON as its recipe
 CTX = Context(

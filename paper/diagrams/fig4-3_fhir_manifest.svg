@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="680" viewBox="0 0 1200 680" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">
+  <rect width="1200" height="680" fill="#ffffff"/>
+  <text x="40" y="54" font-size="27" font-weight="700" fill="#0b0b0b">Field-level encryption with a manifest</text>
+  <text x="40" y="82" font-size="16" fill="#52514e">Selected fields are replaced in place. The manifest binds the set of encrypted values, so deleting or replaying one field is detected.</text>
+
+  <!-- ===== resource ===== -->
+  <text x="40" y="128" font-size="13" font-weight="700" fill="#52514e" letter-spacing="1.5">ENCRYPTED RESOURCE, AS STORED</text>
+  <rect x="40" y="140" width="560" height="420" rx="8" fill="#fafaf8" stroke="#d9d9d5" stroke-width="1.5"/>
+
+  <g font-family="Menlo, Consolas, monospace" font-size="13.5">
+    <text x="60" y="170" fill="#0b0b0b">{</text>
+    <text x="60" y="192" fill="#0b0b0b">  "resourceType": "Condition",</text>
+    <text x="60" y="214" fill="#0b0b0b">  "subject": { "reference": "Patient/8f3a" },</text>
+    <text x="60" y="236" fill="#0b0b0b">  "code": {</text>
+    <text x="60" y="258" fill="#0b0b0b">    "coding": [{ "code": "44054006" }],</text>
+    <text x="60" y="280" fill="#0b0b0b">    "text":</text>
+    <rect x="130" y="266" width="440" height="20" rx="4" fill="#e2f5ee" stroke="#1baf7a" stroke-width="1"/>
+    <text x="136" y="281" fill="#0b0b0b">"cpdpm1:AwCDUE0C…"   ← code.text</text>
+    <text x="60" y="302" fill="#0b0b0b">  },</text>
+    <text x="60" y="324" fill="#0b0b0b">  "note": [</text>
+    <text x="60" y="346" fill="#0b0b0b">    { "text":</text>
+    <rect x="164" y="332" width="406" height="20" rx="4" fill="#e2f5ee" stroke="#1baf7a" stroke-width="1"/>
+    <text x="170" y="347" fill="#0b0b0b">"cpdpm1:Q1BETQIB…"   ← note[*].text</text>
+    <text x="574" y="347" fill="#0b0b0b">},</text>
+    <text x="60" y="368" fill="#0b0b0b">    { "text":</text>
+    <rect x="164" y="354" width="406" height="20" rx="4" fill="#e2f5ee" stroke="#1baf7a" stroke-width="1"/>
+    <text x="170" y="369" fill="#0b0b0b">"cpdpm1:Q1BETQIB…"   ← note[*].text</text>
+    <text x="574" y="369" fill="#0b0b0b">}</text>
+    <text x="60" y="390" fill="#0b0b0b">  ],</text>
+    <text x="60" y="412" fill="#0b0b0b">  "meta": { "tag": [</text>
+    <text x="60" y="434" fill="#52514e">    { "system": "urn:cpdpm:encrypted-paths", "code": "code.text" },</text>
+    <text x="60" y="456" fill="#52514e">    { "system": "urn:cpdpm:encrypted-paths", "code": "note[*].text" },</text>
+    <text x="60" y="478" fill="#0b0b0b">    { "system": "urn:cpdpm:manifest",</text>
+    <rect x="130" y="486" width="440" height="20" rx="4" fill="#fcf1d9" stroke="#eda100" stroke-width="1"/>
+    <text x="136" y="501" fill="#0b0b0b">"code": "cpdpm1:Q1BETQIB…" }   ← _manifest</text>
+    <text x="60" y="524" fill="#0b0b0b">  ] }</text>
+    <text x="60" y="546" fill="#0b0b0b">}</text>
+  </g>
+
+  <!-- ===== manifest, decrypted ===== -->
+  <text x="640" y="128" font-size="13" font-weight="700" fill="#52514e" letter-spacing="1.5">THE MANIFEST, ONCE DECRYPTED</text>
+  <rect x="640" y="140" width="520" height="200" rx="8" fill="#fcf1d9" stroke="#eda100" stroke-width="1.5"/>
+  <g font-family="Menlo, Consolas, monospace" font-size="13.5">
+    <text x="660" y="170" fill="#0b0b0b">{ "v": 1,</text>
+    <text x="660" y="192" fill="#0b0b0b">  "paths":   ["code.text", "note[*].text"],</text>
+    <text x="660" y="214" fill="#0b0b0b">  "entries": [ ["code.text",    "sha256:9f1c…"],</text>
+    <text x="660" y="236" fill="#0b0b0b">               ["note[*].text", "sha256:0be7…"],</text>
+    <text x="660" y="258" fill="#0b0b0b">               ["note[*].text", "sha256:c41a…"] ],</text>
+    <text x="660" y="280" fill="#0b0b0b">  "clear":   null }</text>
+  </g>
+  <text x="660" y="312" font-size="13" fill="#52514e">Encrypted under Context(tenant, patient, "Condition", "_manifest").</text>
+  <text x="660" y="330" font-size="13" fill="#52514e">With bind_cleartext=True, "clear" holds a digest of every unencrypted field.</text>
+
+  <!-- arrow from manifest tag to decrypted box -->
+  <polyline points="600,496 620,496 620,240 632,240" fill="none" stroke="#eda100" stroke-width="2"/>
+  <polygon points="630,234 630,246 640,240" fill="#eda100"/>
+
+  <!-- ===== what decrypt checks ===== -->
+  <text x="640" y="380" font-size="13" font-weight="700" fill="#52514e" letter-spacing="1.5">WHAT decrypt_resource CHECKS, IN ORDER</text>
+  <rect x="640" y="392" width="520" height="168" rx="8" fill="#fafaf8" stroke="#d9d9d5" stroke-width="1.5"/>
+  <text x="660" y="420" font-size="14" fill="#0b0b0b"><tspan font-weight="700">1</tspan>  Exactly one manifest tag. Decrypt it under the caller's context.</text>
+  <text x="660" y="446" font-size="14" fill="#0b0b0b"><tspan font-weight="700">2</tspan>  Walk each manifest path; every value must be a cpdpm1 string.</text>
+  <text x="660" y="472" font-size="14" fill="#0b0b0b"><tspan font-weight="700">3</tspan>  (path, digest) list must equal the manifest's entries exactly.</text>
+  <text x="660" y="498" font-size="14" fill="#0b0b0b"><tspan font-weight="700">4</tspan>  If "clear" is set, the clear-field digest must match too.</text>
+  <text x="660" y="524" font-size="14" fill="#0b0b0b"><tspan font-weight="700">5</tspan>  Only then decrypt each field under its own context.</text>
+  <text x="660" y="548" font-size="13" fill="#52514e">Any failure → DecryptionError. The encrypted-paths tags are never trusted.</text>
+
+  <!-- ===== detected manipulations ===== -->
+  <line x1="40" y1="590" x2="1160" y2="590" stroke="#d9d9d5" stroke-width="1"/>
+  <text x="40" y="618" font-size="13" font-weight="700" fill="#52514e" letter-spacing="1.5">DETECTED</text>
+  <text x="175" y="618" font-size="14" fill="#0b0b0b">delete a note · reorder notes · duplicate a note · put back an older ciphertext of one field</text>
+  <text x="175" y="638" font-size="14" fill="#0b0b0b">add a genuine ciphertext from another document · edit a clear field (when bound)</text>
+  <text x="40" y="666" font-size="13" font-weight="700" fill="#52514e" letter-spacing="1.5">NOT DETECTED</text>
+  <text x="175" y="666" font-size="14" fill="#0b0b0b">replacing the whole resource, manifest included, with an older version of itself. Needs a version in the application's context.</text>
+</svg>

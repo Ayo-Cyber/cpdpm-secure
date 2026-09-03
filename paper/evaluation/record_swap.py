@@ -6,9 +6,9 @@ decrypting for the row it *believes* it is reading, silently gets data
 ("accepted") or gets an error ("rejected").
 
 Schemes
-  v1        the shipped CPDPM client build (AES-CBC + HMAC behind the affine transform)
+  cbc-hmac  AES-256-CBC + HMAC-SHA256 under one shared key (typical shared-key design)
   aes-gcm   AES-256-GCM, one key per tenant, random nonce, no associated data
-  v2        this work: per-context key + header||context as associated data
+  cpdpm     this work: per-context key + header||context as associated data
 
 Attacks
   patient-swap   Bob's ciphertext stored in Alice's row, decrypted for Alice
@@ -24,7 +24,6 @@ from __future__ import annotations
 import copy
 import json
 import os
-import sys
 from pathlib import Path
 from typing import Any
 
@@ -32,13 +31,11 @@ from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
 from cpdpm import Context, DecryptionError, Keyring, decrypt_from_str, encrypt_to_str
 from cpdpm.fhir import decrypt_resource, encrypt_resource
-from paper.analysis._legacy import write_result
+from paper.analysis._common import write_result
 from paper.evaluation.records import POLICY, load_rows, observation
 
 ROOT = Path(__file__).resolve().parents[2]
 RESULTS = Path(__file__).resolve().parent / "results"
-sys.path.insert(0, str(ROOT / "legacy" / "client_deliverable"))
-from cpdpm_healthcare_system import HealthcareEncryption  # noqa: E402
 
 TENANT_P, TENANT_Q = "org:st-marys", "org:riverside"
 
@@ -49,20 +46,46 @@ TENANT_P, TENANT_Q = "org:st-marys", "org:riverside"
 # one tenant, stores the string, and later decrypts what it finds in that cell.
 
 
-class V1:
-    name = "v1 (shipped client build)"
+class CbcHmac:
+    """Typical shared-key design: AES-256-CBC + HMAC-SHA256 under one shared key, random IV."""
+
+    name = "AES-256-CBC + HMAC, one shared key"
 
     def __init__(self) -> None:
-        self.sys = HealthcareEncryption(master_password="hospital-master-password")  # noqa: S106
+        self.key = os.urandom(32)
+        self.mac_key = os.urandom(32)
 
     def encrypt_field(self, tenant: str, patient: str, rtype: str, path: str, value: Any) -> str:
-        return self.sys.encrypt_data(json.dumps(value))
+        from cryptography.hazmat.primitives import hashes, hmac
+        from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+        from cryptography.hazmat.primitives.padding import PKCS7
+
+        iv = os.urandom(16)
+        padder = PKCS7(128).padder()
+        padded = padder.update(json.dumps(value).encode()) + padder.finalize()
+        enc = Cipher(algorithms.AES(self.key), modes.CBC(iv)).encryptor()
+        ct = enc.update(padded) + enc.finalize()
+        h = hmac.HMAC(self.mac_key, hashes.SHA256())
+        h.update(iv + ct)
+        return (iv + ct + h.finalize()).hex()
 
     def decrypt_field(self, tenant: str, patient: str, rtype: str, path: str, text: str) -> Any:
-        return json.loads(self.sys.decrypt_data(text))
+        from cryptography.hazmat.primitives import hashes, hmac
+        from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+        from cryptography.hazmat.primitives.padding import PKCS7
+
+        raw = bytes.fromhex(text)
+        iv, ct, tag = raw[:16], raw[16:-32], raw[-32:]
+        h = hmac.HMAC(self.mac_key, hashes.SHA256())
+        h.update(iv + ct)
+        h.verify(tag)
+        dec = Cipher(algorithms.AES(self.key), modes.CBC(iv)).decryptor()
+        padded = dec.update(ct) + dec.finalize()
+        unpadder = PKCS7(128).unpadder()
+        return json.loads(unpadder.update(padded) + unpadder.finalize())
 
     def rotate_and_retire(self) -> None:
-        # v1 has no key versioning; the master password simply stays in use.
+        # One long-lived key; nothing to retire.
         pass
 
 
@@ -87,7 +110,7 @@ class PlainGCM:
 
 
 class V2:
-    name = "CPDPM v2 (this work)"
+    name = "CPDPM (this work)"
 
     def __init__(self) -> None:
         self.keyring = Keyring.generate()
@@ -175,11 +198,11 @@ def fhir_level_demo() -> dict[str, Any]:
         outcome = "accepted"
     except DecryptionError:
         outcome = "rejected"
-    return {"scheme": "CPDPM v2 FHIR layer", "patient_swap": {"outcome": outcome}}
+    return {"scheme": "CPDPM FHIR layer", "patient_swap": {"outcome": outcome}}
 
 
 def main() -> None:
-    schemes = [V1(), PlainGCM(), V2()]
+    schemes = [CbcHmac(), PlainGCM(), V2()]
     per_scheme = [run_scheme(s) for s in schemes]
     attacks = ["patient_swap", "tenant_move", "field_move", "stale_replay_after_retirement"]
     matrix = {

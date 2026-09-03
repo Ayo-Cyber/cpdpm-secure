@@ -1,0 +1,120 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="660" viewBox="0 0 1200 660" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">
+  <rect width="1200" height="660" fill="#ffffff"/>
+  <text x="40" y="54" font-size="27" font-weight="700" fill="#0b0b0b">Wire formats</text>
+  <text x="40" y="82" font-size="16" fill="#52514e">One-shot blob (cpdpm.core) and chunked stream (cpdpm.stream). Grey fields are authenticated but not encrypted.</text>
+
+  <!-- ===== A: one-shot blob ===== -->
+  <text x="40" y="128" font-size="13" font-weight="700" fill="#52514e" letter-spacing="1.5">A · ONE-SHOT BLOB</text>
+  <line x1="40" y1="138" x2="1160" y2="138" stroke="#d9d9d5" stroke-width="1"/>
+
+  <!-- field boxes, y 175-235 -->
+  <!-- magic -->
+  <rect x="40" y="175" width="90" height="60" fill="#f1f1ef" stroke="#8a8a86" stroke-width="1.5"/>
+  <text x="85" y="210" font-size="14" font-family="Menlo, Consolas, monospace" fill="#0b0b0b" text-anchor="middle">"CPDM"</text>
+  <text x="235" y="166" font-size="12.5" fill="#52514e" text-anchor="middle">magic · version · suite · key version · nonce length</text>
+  <text x="85" y="254" font-size="12.5" fill="#52514e" text-anchor="middle">4 B</text>
+  <!-- version -->
+  <rect x="130" y="175" width="60" height="60" fill="#f1f1ef" stroke="#8a8a86" stroke-width="1.5"/>
+  <text x="160" y="210" font-size="14" font-family="Menlo, Consolas, monospace" fill="#0b0b0b" text-anchor="middle">0x01</text>
+    <text x="160" y="254" font-size="12.5" fill="#52514e" text-anchor="middle">1 B</text>
+  <!-- suite -->
+  <rect x="190" y="175" width="60" height="60" fill="#f1f1ef" stroke="#8a8a86" stroke-width="1.5"/>
+  <text x="220" y="210" font-size="14" font-family="Menlo, Consolas, monospace" fill="#0b0b0b" text-anchor="middle">suite</text>
+    <text x="220" y="254" font-size="12.5" fill="#52514e" text-anchor="middle">1 B</text>
+  <!-- key version -->
+  <rect x="250" y="175" width="110" height="60" fill="#f1f1ef" stroke="#8a8a86" stroke-width="1.5"/>
+  <text x="305" y="210" font-size="14" font-family="Menlo, Consolas, monospace" fill="#0b0b0b" text-anchor="middle">key_version</text>
+    <text x="305" y="254" font-size="12.5" fill="#52514e" text-anchor="middle">4 B, big-endian</text>
+  <!-- nonce len -->
+  <rect x="360" y="175" width="70" height="60" fill="#f1f1ef" stroke="#8a8a86" stroke-width="1.5"/>
+  <text x="395" y="210" font-size="14" font-family="Menlo, Consolas, monospace" fill="#0b0b0b" text-anchor="middle">n_len</text>
+  <text x="395" y="254" font-size="12.5" fill="#52514e" text-anchor="middle">1 B</text>
+  <!-- nonce -->
+  <rect x="430" y="175" width="160" height="60" fill="#e6f0fb" stroke="#2a78d6" stroke-width="1.5"/>
+  <text x="510" y="210" font-size="14" font-family="Menlo, Consolas, monospace" fill="#0b0b0b" text-anchor="middle">nonce</text>
+  <text x="510" y="166" font-size="12.5" fill="#52514e" text-anchor="middle">random, per encryption</text>
+  <text x="510" y="254" font-size="12.5" fill="#52514e" text-anchor="middle">12 B (GCM) · 24 B (XChaCha)</text>
+  <!-- commit -->
+  <rect x="590" y="175" width="150" height="60" fill="#fcf1d9" stroke="#eda100" stroke-width="1.5"/>
+  <text x="665" y="210" font-size="14" font-family="Menlo, Consolas, monospace" fill="#0b0b0b" text-anchor="middle">commit</text>
+  <text x="665" y="166" font-size="12.5" fill="#52514e" text-anchor="middle">key commitment</text>
+  <text x="665" y="254" font-size="12.5" fill="#52514e" text-anchor="middle">32 B, encrypted</text>
+  <!-- message -->
+  <rect x="740" y="175" width="300" height="60" fill="#e2f5ee" stroke="#1baf7a" stroke-width="1.5"/>
+  <text x="890" y="210" font-size="14" font-family="Menlo, Consolas, monospace" fill="#0b0b0b" text-anchor="middle">message</text>
+  <text x="890" y="166" font-size="12.5" fill="#52514e" text-anchor="middle">the value, any length</text>
+  <text x="890" y="254" font-size="12.5" fill="#52514e" text-anchor="middle">n B, encrypted</text>
+  <!-- tag -->
+  <rect x="1040" y="175" width="120" height="60" fill="#fdebe3" stroke="#eb6834" stroke-width="1.5"/>
+  <text x="1100" y="210" font-size="14" font-family="Menlo, Consolas, monospace" fill="#0b0b0b" text-anchor="middle">tag</text>
+  <text x="1100" y="166" font-size="12.5" fill="#52514e" text-anchor="middle">Poly1305 / GHASH</text>
+  <text x="1100" y="254" font-size="12.5" fill="#52514e" text-anchor="middle">16 B</text>
+
+  <!-- brackets -->
+  <path d="M40,278 L40,290 L590,290 L590,278" fill="none" stroke="#52514e" stroke-width="1.5"/>
+  <text x="315" y="312" font-size="13.5" fill="#0b0b0b" text-anchor="middle">header (11 B + nonce) — associated data together with canon(ctx)</text>
+  <path d="M594,278 L594,290 L1040,290 L1040,278" fill="none" stroke="#52514e" stroke-width="1.5"/>
+  <text x="817" y="312" font-size="13.5" fill="#0b0b0b" text-anchor="middle">AEAD plaintext, encrypted and authenticated</text>
+  <text x="1100" y="312" font-size="13.5" fill="#0b0b0b" text-anchor="middle">authenticates all</text>
+
+  <text x="40" y="350" font-size="13.5" fill="#52514e">suite: 1 = AES-256-GCM, 2 = XChaCha20-Poly1305. key_version selects MK[v]. Fixed overhead per blob: 71 B (GCM), 83 B (XChaCha); text form adds 7 B and one third.</text>
+
+  <!-- ===== B: stream ===== -->
+  <text x="40" y="404" font-size="13" font-weight="700" fill="#52514e" letter-spacing="1.5">B · STREAM (large payloads)</text>
+  <line x1="40" y1="414" x2="1160" y2="414" stroke="#d9d9d5" stroke-width="1"/>
+
+  <!-- stream header -->
+  <rect x="40" y="450" width="80" height="56" fill="#f1f1ef" stroke="#8a8a86" stroke-width="1.5"/>
+  <text x="80" y="483" font-size="13" font-family="Menlo, Consolas, monospace" fill="#0b0b0b" text-anchor="middle">"CPDS"</text>
+  <rect x="120" y="450" width="50" height="56" fill="#f1f1ef" stroke="#8a8a86" stroke-width="1.5"/>
+  <text x="145" y="483" font-size="13" font-family="Menlo, Consolas, monospace" fill="#0b0b0b" text-anchor="middle">0x01</text>
+  <rect x="170" y="450" width="56" height="56" fill="#f1f1ef" stroke="#8a8a86" stroke-width="1.5"/>
+  <text x="198" y="483" font-size="13" font-family="Menlo, Consolas, monospace" fill="#0b0b0b" text-anchor="middle">suite</text>
+  <rect x="226" y="450" width="90" height="56" fill="#f1f1ef" stroke="#8a8a86" stroke-width="1.5"/>
+  <text x="271" y="483" font-size="13" font-family="Menlo, Consolas, monospace" fill="#0b0b0b" text-anchor="middle">key_ver</text>
+  <rect x="316" y="450" width="100" height="56" fill="#f1f1ef" stroke="#8a8a86" stroke-width="1.5"/>
+  <text x="366" y="483" font-size="13" font-family="Menlo, Consolas, monospace" fill="#0b0b0b" text-anchor="middle">chunk_size</text>
+  <rect x="416" y="450" width="56" height="56" fill="#f1f1ef" stroke="#8a8a86" stroke-width="1.5"/>
+  <text x="444" y="483" font-size="13" font-family="Menlo, Consolas, monospace" fill="#0b0b0b" text-anchor="middle">p_len</text>
+  <rect x="472" y="450" width="118" height="56" fill="#e6f0fb" stroke="#2a78d6" stroke-width="1.5"/>
+  <text x="531" y="483" font-size="13" font-family="Menlo, Consolas, monospace" fill="#0b0b0b" text-anchor="middle">prefix</text>
+  <text x="80" y="526" font-size="12" fill="#52514e" text-anchor="middle">4 B</text>
+  <text x="145" y="526" font-size="12" fill="#52514e" text-anchor="middle">1 B</text>
+  <text x="198" y="526" font-size="12" fill="#52514e" text-anchor="middle">1 B</text>
+  <text x="271" y="526" font-size="12" fill="#52514e" text-anchor="middle">4 B</text>
+  <text x="366" y="526" font-size="12" fill="#52514e" text-anchor="middle">4 B</text>
+  <text x="440" y="526" font-size="12" fill="#52514e" text-anchor="middle">1 B</text>
+  <text x="531" y="526" font-size="12" fill="#52514e" text-anchor="middle">7 B GCM · 19 B XChaCha</text>
+
+  <!-- chunks -->
+  <rect x="620" y="450" width="150" height="56" fill="#fcf1d9" stroke="#eda100" stroke-width="1.5"/>
+  <rect x="620" y="450" width="46" height="56" fill="#fcf1d9" stroke="#eda100" stroke-width="1.5"/>
+  <text x="643" y="483" font-size="11.5" font-family="Menlo, Consolas, monospace" fill="#0b0b0b" text-anchor="middle">commit</text>
+  <rect x="666" y="450" width="76" height="56" fill="#e2f5ee" stroke="#1baf7a" stroke-width="1.5"/>
+  <text x="704" y="483" font-size="13" font-family="Menlo, Consolas, monospace" fill="#0b0b0b" text-anchor="middle">pt_0</text>
+  <rect x="742" y="450" width="28" height="56" fill="#fdebe3" stroke="#eb6834" stroke-width="1.5"/>
+  <text x="756" y="483" font-size="11" font-family="Menlo, Consolas, monospace" fill="#0b0b0b" text-anchor="middle">tag</text>
+
+  <rect x="790" y="450" width="120" height="56" fill="#e2f5ee" stroke="#1baf7a" stroke-width="1.5"/>
+  <text x="836" y="483" font-size="13" font-family="Menlo, Consolas, monospace" fill="#0b0b0b" text-anchor="middle">pt_1</text>
+  <rect x="882" y="450" width="28" height="56" fill="#fdebe3" stroke="#eb6834" stroke-width="1.5"/>
+  <text x="896" y="483" font-size="11" font-family="Menlo, Consolas, monospace" fill="#0b0b0b" text-anchor="middle">tag</text>
+
+  <text x="950" y="484" font-size="18" fill="#52514e" text-anchor="middle">…</text>
+
+  <rect x="990" y="450" width="170" height="56" fill="#e2f5ee" stroke="#1baf7a" stroke-width="1.5"/>
+  <text x="1061" y="483" font-size="13" font-family="Menlo, Consolas, monospace" fill="#0b0b0b" text-anchor="middle">pt_last (shorter)</text>
+  <rect x="1132" y="450" width="28" height="56" fill="#fdebe3" stroke="#eb6834" stroke-width="1.5"/>
+  <text x="1146" y="483" font-size="11" font-family="Menlo, Consolas, monospace" fill="#0b0b0b" text-anchor="middle">tag</text>
+
+  <!-- per-chunk nonce labels -->
+  <text x="890" y="548" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#52514e" text-anchor="middle">nonce_i = prefix || u32(i) || flag,   flag = 0x01 on the final chunk only</text>
+
+  <path d="M40,566 L40,578 L590,578 L590,566" fill="none" stroke="#52514e" stroke-width="1.5"/>
+  <text x="315" y="600" font-size="13.5" fill="#0b0b0b" text-anchor="middle">stream header — associated data for every chunk, with canon(ctx)</text>
+  <path d="M620,566 L620,578 L1160,578 L1160,566" fill="none" stroke="#52514e" stroke-width="1.5"/>
+  <text x="890" y="600" font-size="13.5" fill="#0b0b0b" text-anchor="middle">STREAM: the chunk counter and last-flag live in the nonce, so</text>
+  <text x="890" y="618" font-size="13.5" fill="#0b0b0b" text-anchor="middle">truncation, reordering, drop, duplicate and extension all fail authentication</text>
+
+  <text x="40" y="648" font-size="13.5" fill="#52514e">Each chunk is released only after its tag verifies. If a later chunk fails, everything released so far must be discarded by the consumer.</text>
+</svg>

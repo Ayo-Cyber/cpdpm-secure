@@ -29,7 +29,7 @@ def test_wrong_nonce_len_rejected_at_construction() -> None:
     [
         lambda b: b[:5],  # short
         lambda b: b"XXXX" + b[4:],  # bad magic
-        lambda b: b[:4] + b"\x01" + b[5:],  # wrong protocol version
+        lambda b: b[:4] + b"\x02" + b[5:],  # wrong protocol version
         lambda b: b[:5] + b"\x09" + b[6:],  # unknown suite
         lambda b: b[:10] + b"\x18" + b[11:],  # nonce_len mismatch for suite
         lambda b: b[: FIXED_LEN + 12 + TAG_LEN - 1],  # truncated before tag

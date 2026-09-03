@@ -1,7 +1,7 @@
 # Threat model
 
-Status: draft v0, week 0 (2 September 2026). For supervisor review.
-Companion: [design-v2.md](design-v2.md).
+Status: draft 1 (September 2026). For supervisor review.
+Companion: [design.md](design.md).
 
 ## 1. What is being protected
 
@@ -61,7 +61,7 @@ The application host is the trust anchor. Everything below it in the diagram is 
 | G5 Rotation | MKs are versioned. New records use the current version; old records remain decryptable; re-encryption can proceed lazily. A retired version can be destroyed to make its records unreadable (crypto-shredding). | A3 |
 | G6 Failure without oracle | Every decryption failure raises one error type carrying no information about *which* check failed. | A1, A2 |
 
-G3 is the contribution. G1, G2, G4, G5 and G6 are table stakes that the shipped v1 met only partially (v1 had no context binding, no rotation, and derived its MAC key from its cipher key).
+G3 and G3a are the contribution. G1, G2, G4, G5 and G6 are table stakes that shared-key encryption at rest often meets only partially (no binding, no rotation, ad hoc MAC keys).
 
 ## 5. The demonstrated attack
 
@@ -73,9 +73,9 @@ The evaluation chapter runs one concrete attack against three schemes.
 
 | Scheme | Outcome |
 |---|---|
-| CPDPM v1 (legacy) | Decrypts cleanly. Clinician sees Bob's condition under Alice's name. **Undetected.** |
+| AES-256-CBC + HMAC, one shared key | Decrypts cleanly. Clinician sees Bob's condition under Alice's name. **Undetected.** |
 | AES-256-GCM with random nonce, no associated data | Decrypts cleanly. **Undetected.** Confidentiality is perfect; binding is absent. |
-| CPDPM v2 (this design) | Rejected. The derived key and the associated data both differ. |
+| CPDPM (this design) | Rejected. The derived key and the associated data both differ. |
 
 Variants also run: cross-tenant move, cross-field move (`note` to `diagnosis`), and replay of a stale ciphertext over a fresh one under a rotated key version.
 
@@ -83,8 +83,8 @@ Variants also run: cross-tenant move, cross-field move (`note` to `diagnosis`), 
 
 1. `cryptography`'s AES-GCM and ChaCha20-Poly1305 are correct AEADs, and HKDF-SHA256 is a PRF.
 2. The application supplies the correct context at decrypt time from an authenticated source (the row it is reading, the tenant of the authenticated user), not from the ciphertext itself. If the application trusts a context stored *beside* the ciphertext by the same adversary, G3 collapses. The API is shaped to make this mistake hard: context is a required argument to `decrypt`, and the header carries no context fields.
-3. Nonces come from the OS CSPRNG. With 96-bit random GCM nonces under a *per-context* key, the number of encryptions under any single key is bounded by records in one context, which keeps collision probability negligible. See design-v2 §4.
-4. MK has at least 256 bits of entropy from a CSPRNG or is derived from a password by Argon2id with parameters no weaker than the defaults in design-v2 §6.
+3. Nonces come from the OS CSPRNG. With 96-bit random GCM nonces under a *per-context* key, the number of encryptions under any single key is bounded by records in one context, which keeps collision probability negligible. See design §4.
+4. MK has at least 256 bits of entropy from a CSPRNG or is derived from a password by Argon2id with parameters no weaker than the defaults in design §6.
 
 ## 7. Relationship to HIPAA
 
@@ -92,5 +92,5 @@ This is not a compliance claim. The technical safeguards in 45 CFR §164.312 tha
 
 ## 8. Open questions for supervisor discussion
 
-- Should key commitment be a stated goal? AES-GCM is not key-committing; in a password-derived-key setting this enables partitioning-oracle attacks. Design-v2 §7 proposes a cheap commitment tag. Decide whether to include it in scope or note it as a limitation.
+- Key commitment is in scope and implemented (design §7); confirm the supervisor is content with the padding-fix argument rather than a committing AEAD mode.
 - Replay *within* the same context. Per-field replay inside a resource is now detected by the manifest (G3a). Replay of a *whole* resource, manifest included, by an older version of itself is not: preventing it needs a monotonic version in the context, which is application state. Documented as a limitation.

@@ -4,7 +4,7 @@
 
 cpdpm is **pre-alpha research software**. It has not been reviewed by a third party. Do not use it to protect real patient data until a review has happened and this file says so.
 
-What it does claim, and the evidence for each claim, is in [docs/threat-model.md](docs/threat-model.md) and [docs/design-v2.md](docs/design-v2.md). What it does not claim is listed in the threat model under "explicitly out of scope" and in the limitations section of the paper outline.
+What it does claim, and the evidence for each claim, is in [docs/threat-model.md](docs/threat-model.md) and [docs/design.md](docs/design.md). What it does not claim is listed in the threat model under "explicitly out of scope" and in the limitations section of the paper outline.
 
 ## Design principles that bound the attack surface
 

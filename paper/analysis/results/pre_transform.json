@@ -1,0 +1,31 @@
+{
+  "_meta": {
+    "generated_utc": "2026-09-03T08:21:00+00:00",
+    "machine": "arm64",
+    "python": "3.14.6",
+    "script": "pre_transform",
+    "system": "Darwin"
+  },
+  "diffusion": {
+    "max": 1,
+    "mean_output_bytes_changed_per_input_byte_flip": 1.0,
+    "reference": "a block cipher changes about half of 256 bytes",
+    "trials": 1000
+  },
+  "effective_keyspace": {
+    "distinct_transforms": 32768,
+    "log2_distinct": 15.0,
+    "note": "128 odd multipliers x 256 offsets; extra parameters in a description do not enlarge this",
+    "parameter_pairs": 65536
+  },
+  "invertibility": {
+    "roundtrips_ok": 200,
+    "trials": 200
+  },
+  "security_argument": {
+    "claim": "Enc'(m) = Enc(T_k(m)) with T_k a public or transmitted bijection is exactly as secure as Enc.",
+    "secret_key_bits_upper_bound": 15,
+    "sketch": "Any adversary against Enc' applies T_k (known) to its chosen plaintexts and T_k^{-1} to any recovered plaintext, giving an adversary against Enc with identical advantage; conversely Enc' inherits every security property of Enc. Secrecy of k adds at most log2(keyspace) bits, here 15, and only if k is never transmitted.",
+    "transmitted_key_bits": 0
+  }
+}

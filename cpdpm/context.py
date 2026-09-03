@@ -1,6 +1,6 @@
 """The context a ciphertext is bound to, and its canonical encoding.
 
-See ``docs/design-v2.md`` §3. The encoding is injective: two contexts encode to
+See ``docs/design.md`` §3. The encoding is injective: two contexts encode to
 the same bytes only if they are equal. That property is what makes the
 derived-key and associated-data binding meaningful, and it is tested with a
 property-based test in ``tests/test_context.py``.
@@ -13,7 +13,7 @@ from dataclasses import dataclass
 
 from cpdpm.errors import ContextError
 
-ENCODING_VERSION = 0x02
+ENCODING_VERSION = 0x01
 MAX_FIELD_BYTES = 0xFFFF
 
 _FIELDS = ("tenant", "patient", "resource_type", "field_path", "purpose")
