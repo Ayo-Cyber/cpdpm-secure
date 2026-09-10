@@ -89,6 +89,7 @@ Reading: cpdpm-gcm carries a fixed cost of about 12 µs per operation (two HKDF-
 | fig 4-1 | Key hierarchy and encryption path | `paper/diagrams/fig4-1_key_hierarchy.svg` |
 | fig 4-2 | Wire formats: one-shot blob and stream | `paper/diagrams/fig4-2_wire_format.svg` |
 | fig 4-3 | Field-level encryption with the manifest | `paper/diagrams/fig4-3_fhir_manifest.svg` |
+| fig 4-4 | System architecture and trust boundary | `paper/diagrams/fig4-4_architecture.svg` |
 | fig 5-0 | The record-swap attack, three schemes | `paper/diagrams/fig5-0_record_swap.svg` |
 | table 4-1 | Bytes of overhead per ciphertext, measured | `paper/construction/overhead_table.py` |
 
