@@ -1,31 +1,43 @@
 \section{Background and related work}
 \label{sec:background}
 
-% YOUR SECTION. Four subsections; the first three are short and can be written from refs.bib.
-% The fourth is the reading you are doing this week and is the part reviewers will weigh most.
-
 \subsection{Authenticated encryption with associated data}
-\todo{One paragraph. Define AEAD informally: confidentiality of the plaintext, integrity of plaintext and associated data, the associated data authenticated but not encrypted. Cite \cite{rogaway2002aead,rfc5116}. Name AES-GCM \cite{nist-gcm} and ChaCha20-Poly1305 \cite{rfc8439}; mention XChaCha \cite{xchacha-draft}. State that associated data is the standard mechanism for binding a ciphertext to its context and that it is widely underused in storage encryption.}
 
-\subsection{Key commitment}
-\todo{One paragraph. AES-GCM and ChaCha20-Poly1305 do not commit to their key: one ciphertext can decrypt validly under two keys \cite{albertini2022commitment}. In password-derived-key settings this enables partitioning-oracle attacks \cite{len2021partitioning}. Cite the padding-fix mitigation and committing constructions \cite{albertini2022commitment,bellare2022committing,grubbs2017franking}.}
+An authenticated-encryption scheme with associated data (AEAD) takes a key, a nonce, a plaintext and a string of associated data, and returns a ciphertext with an authentication tag. Decryption succeeds only if the key, nonce, ciphertext \emph{and} associated data are all presented unchanged; the associated data is authenticated but not encrypted, so it may be public~\cite{rogaway2002aead,rfc5116}. The two schemes in wide deployment are AES in Galois/Counter Mode~\cite{nist-gcm} and ChaCha20-Poly1305~\cite{rfc8439}; the XChaCha variant extends the latter's nonce to 192 bits so that random nonces are safe at any volume~\cite{xchacha-draft}. Bellare and Namprempre established the relations among the security notions and showed that encrypt-then-MAC is the sound generic composition~\cite{bellare2000ae}, which is why the shared-key baseline in Section~\ref{sec:evaluation} is built that way. Associated data is the standard mechanism for binding a ciphertext to the context in which it may be decrypted. In transport protocols it binds headers and sequence numbers; in storage encryption for clinical data it is largely unused, and when it is used, the content and encoding of the bound context are left to each application.
 
-\subsection{Envelope encryption and encryption context in practice}
-\todo{One paragraph. Cloud key services bind key use to an ``encryption context'' \cite{aws-kms-context}; Tink documents associated data as the way to bind a ciphertext to where it is used \cite{tink-aead}. The database-adversary literature explains why storage-layer integrity matters: \cite{popa2011cryptdb,grubbs2017encrypted-db}. Position CPDPM as bringing that discipline to clinical records with a fixed, injective context and per-context keys.}
+\subsection{Key derivation and key commitment}
+
+Deriving many keys from one master key is the job of a key-derivation function. HKDF~\cite{rfc5869,krawczyk2010hkdf} extracts a pseudorandom key from input material and expands it under a label; distinct labels yield computationally independent keys. CPDPM uses the canonical context as part of the label, so every context has its own key. Where a master key must come from a password, Argon2id is the current recommendation~\cite{rfc9106}.
+
+The standard AEAD schemes are not key-committing. Albertini et al.\ showed that a single AES-GCM or ChaCha20-Poly1305 ciphertext can be crafted to decrypt validly under two different keys, and that this enables practical attacks wherever the receiver may hold several candidate keys~\cite{albertini2022commitment}. Len, Grubbs and Ristenpart showed the consequence for password-derived keys: a partitioning oracle lets an attacker test many passwords per query~\cite{len2021partitioning}. The literature offers two responses: committing constructions~\cite{grubbs2017franking,bellare2022committing}, and the padding fix, a fixed derived value prepended to the plaintext and checked after decryption~\cite{albertini2022commitment}. CPDPM adopts the padding fix with a 32-byte HKDF-derived commitment, because it composes with any AEAD the underlying library provides.
+
+\subsection{Encryption context in practice, and the database adversary}
+
+Practice has converged on the idea this paper formalises for clinical records. AWS Key Management Service binds each key use to an ``encryption context'' of key-value pairs that must be supplied again at decryption~\cite{aws-kms-context}. Google's Tink library documents associated data as the way to bind a ciphertext to its intended location, with the example of a database row's primary key~\cite{tink-aead}. Neither prescribes \emph{what} to bind for a clinical record, nor an encoding under which two contexts cannot collide, nor a key hierarchy that isolates the blast radius of a leaked key; those are the design decisions of Section~\ref{sec:design}.
+
+The adversary that motivates them is the one the encrypted-database literature has studied for a decade. CryptDB made the case that a database server should be treated as untrusted and that encryption alone does not prevent it from serving wrong answers~\cite{popa2011cryptdb}. Grubbs, Ristenpart and Shmatikov distinguished the snapshot attacker, who sees the database once, from the persistent attacker, who observes and manipulates it over time, and argued that most encrypted-database security claims hold only against the former~\cite{grubbs2017encrypted-db}. The insider with write access in Section~\ref{sec:threat} is a persistent attacker whose goal is integrity of association rather than confidentiality: not to read a record but to relocate it.
 
 \subsection{Hybrid encryption for health records}
 \label{sec:genre}
-\todo{This is the reading. Collect roughly a dozen papers that add a reversible byte-level transform (affine map, substitution, chaotic map, ``polynomial'' layer) before AES and claim added security for EHR data. Summarise them in Table~\ref{tab:genre}: venue, year, the transform, the claim, the evidence offered (typically entropy or histogram plots and a speed table), and whether the transform key is public, transmitted, or secret in the described system. Do not name-call; state what each paper shows and does not show. Section~\ref{sec:pretransform} then measures the pattern.}
+
+% THE READING. Fill Table 1 from the papers you collect; then this paragraph and the closing one write themselves.
+% For each paper record: venue, year, the pre-transform (affine / substitution / chaotic map / polynomial / other),
+% the security claim as stated, the evidence offered (entropy, histogram, NPCR/UACI, speed table, none), and whether
+% the transform key is secret, transmitted with the ciphertext, or fixed in the code. Twelve is enough.
+
+A parallel literature on encrypting electronic health records has pursued a different route to security beyond a standard cipher. Its recurring design places a keyed, byte-level, reversible transform in front of AES: an affine map on byte values, a substitution table, a sequence derived from a chaotic map, or a polynomial evaluated over a small field. The resulting schemes are described as hybrid, layered or enhanced, and the added layer is presented as additional resistance to cryptanalysis. Table~\ref{tab:genre} summarises representative examples.
 
 \begin{table}[t]
 \centering\small
-\caption{Hybrid pre-transform schemes for health-record encryption. \todo{fill from your reading}}
+\caption{Hybrid pre-transform schemes for health-record encryption. \todo{fill from your reading; keep the columns}}
 \label{tab:genre}
-\begin{tabular}{@{}llllll@{}}
+\begin{tabular}{@{}p{2.2cm}cp{2.6cm}p{3.2cm}p{2.8cm}p{1.9cm}@{}}
 \toprule
 Work & Year & Pre-transform & Security claim & Evidence offered & Transform key \\
 \midrule
-\todo{...} & & & & & \\
+\todo{author} & \todo{yyyy} & \todo{affine map} & \todo{``resists brute force''} & \todo{entropy plot, speed table} & \todo{transmitted} \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+Two features of this literature motivate Section~\ref{sec:pretransform}. First, the evidence offered for the added layer is typically statistical, entropy or histogram uniformity of the ciphertext, or a speed comparison, rather than a reduction; and a statistical property of AES output is a property of AES, not of the layer in front of it. Second, the transform key is in most designs either fixed in the implementation or transmitted alongside the ciphertext so that the receiver can invert it, in which case it is public. Section~\ref{sec:pretransform} implements the most common instance from its published description and measures exactly what it adds.

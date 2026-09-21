@@ -1,18 +1,26 @@
 \section{Discussion and limitations}
 \label{sec:discussion}
 
-% YOUR SECTION. Each item below is a paragraph; the substance is in docs/red-team-2026-09.md and docs/threat-model.md.
+\paragraph{Whole-document replay}
+The manifest detects the deletion, reordering, duplication or individual replay of an encrypted field within a resource. It does not detect the replacement of an entire resource, manifest included, by an older version of itself: the old resource is internally consistent and was genuinely produced for this patient, tenant and type. Preventing that requires a monotonic version, a sequence number or a commit timestamp, to be part of the context, and the version is application state the library cannot see. An application that needs it puts the version in the \code{purpose} field or extends the context, and then must supply the current version at every read, which is the same discipline the rest of the design already demands.
 
-\todo{Whole-document replay. The manifest detects per-field replay inside a resource but not the replacement of an entire resource, manifest included, by an older version of itself. Preventing that needs a monotonic version in the context, which is application state the library cannot see. State it plainly and say what an application must do.}
+\paragraph{The context must be authentic}
+Everything in Section~\ref{sec:design} rests on the caller supplying the context from authenticated facts. The API takes the context as a required argument to every operation and stores none of it; the header carries no context field; the FHIR layer may derive the patient from the resource at encryption time but requires it from the caller at decryption. These choices make the mistake visible but cannot make it impossible. An application that stores the context beside the ciphertext and reads both back has rebuilt the shared-key baseline, because the adversary who can move the ciphertext can move the stored context with it. This is the single rule a deployment has to get right, and it is stated in the library's documentation before the first line of usage.
 
-\todo{Metadata. Ciphertext lengths, the existence of records, and which fields are encrypted are visible. Length-hiding padding is possible and was not a goal.}
+\paragraph{Metadata}
+Ciphertext lengths, the existence of a record, its write time, and which fields of a resource are encrypted are all visible to storage. Length-hiding padding to a bucket size is compatible with the construction and was not a goal. An adversary who can count encrypted notes learns that a patient has that many notes.
 
-\todo{The context must be authentic. The API takes the context as a required argument and stores none of it, but it cannot stop an application from reading a stored context back. Say why this is the single most important rule for a deployment and how the FHIR layer's derive-at-encrypt, require-at-decrypt asymmetry is designed to make the mistake visible.}
+\paragraph{Out of scope}
+Compromise of the application host while master keys are in memory defeats any scheme at the storage layer; the defence is host hardening and hardware key storage, which the key-wrapping interface accommodates but this paper does not evaluate. Timing side channels beyond constant-time comparison of the commitment are delegated to the underlying libraries. Availability is not addressed: an adversary who deletes storage denies service, and the construction guarantees only that whatever storage returns is either correct or rejected.
 
-\todo{Host compromise, side channels and availability are out of scope; say so once.}
+\paragraph{Review status}
+The security argument of Section~\ref{sec:security} is a sketch reducing to standard notions, not a formal proof. The implementation was reviewed by its author against the threat model, with property-based fuzzing of every parser, and the findings and fixes of that review are recorded in the artifact. Two of them were substantive: field deletion and per-field replay within a FHIR resource were not detected until the manifest was added. No third party has examined the code, and the construction should not protect real patient data until one has.
 
-\todo{Review status. The construction reduces to standard notions but the reduction is a sketch, the review was a self-review with fuzzing (cite the red-team document in the artifact), and no third party has examined the code. Invite it.}
+\paragraph{Unicode}
+Context strings are normalised to NFC before encoding. Normalisation is defined per Unicode version, and a code point unassigned in one version may acquire a decomposition in a later one; two deployments on different Python versions could in principle canonicalise the same identifier differently. Rejecting unassigned code points would remove the risk at the cost of making validity depend on the running interpreter, and was not done. Identifiers drawn from a controlled vocabulary, as tenant and resource-type identifiers are, do not encounter the problem.
 
-\todo{Unicode. NFC normalisation can differ across Unicode versions for newly assigned characters; two deployments on different Python versions could in principle disagree about a context. Rejecting unassigned code points would fix this at the cost of portability; it was not done.}
+\paragraph{Performance}
+The fixed per-operation cost of two HKDF derivations and a commitment is about \CpdpmFixedUs\,$\mu$s on the arm64 machine and \XCpdpmFixedUs\,$\mu$s on x86-64, which matters only for workloads encrypting many small fields at high rate, and there per-field binding is the point. The XChaCha20-Poly1305 suite is slow in the current build for reasons of library and hardware support rather than design, and a ChaCha20-Poly1305 suite over the same OpenSSL bindings as AES-GCM is the natural addition.
 
-\todo{On the genre. What Section~\ref{sec:pretransform} implies for how reviewers might read hybrid-encryption papers: ask whether the transform key travels, ask for a reduction, and ask what property the scheme has that the underlying cipher lacks.}
+\paragraph{Reading the hybrid-encryption literature}
+Section~\ref{sec:pretransform} suggests three questions a reviewer can put to any scheme that adds a layer in front of a standard cipher. Does the layer's key travel with the ciphertext? Is there a reduction, or only a statistic of the output? And what can an adversary do to the scheme that the same adversary cannot do to the cipher alone? For the layers surveyed in Section~\ref{sec:genre} the answers are yes, the latter, and nothing.
