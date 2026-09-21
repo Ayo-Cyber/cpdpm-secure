@@ -1,0 +1,76 @@
+\section{Evaluation}
+\label{sec:evaluation}
+
+% DRAFTED FOR YOU to rewrite in your voice. Every number is a macro regenerated from the pinned result files.
+
+Two experiments. The first asks whether the construction does what Section~\ref{sec:threat} says an adversary can do to the baselines. The second asks what it costs. Both run from the artifact with one command; payloads are FHIR \code{Observation} resources built from a public stroke-prediction dataset of 5{,}110 rows~\cite{kaggle-stroke}, which supplies realistic record shapes and sizes and nothing more.
+
+\subsection{Record swap}
+\label{sec:swap}
+
+Three schemes are driven through one interface: the application encrypts one field of one resource for one patient in one tenant, stores the string, and later decrypts whatever it finds in that cell for the row it believes it is reading.
+
+\begin{itemize}
+  \item \textbf{AES-256-CBC with HMAC-SHA256 under one shared key}, random IV. A typical legacy design for encryption at rest.
+  \item \textbf{AES-256-GCM with one key per tenant}, random nonce, no associated data. A typical modern design.
+  \item \textbf{CPDPM}, AES-256-GCM suite.
+\end{itemize}
+
+Four manipulations by an adversary with database write access, illustrated in Figure~\ref{fig:record-swap}:
+\begin{itemize}
+  \item \emph{Patient swap.} Bob's ciphertext is copied into Alice's row; the application decrypts for Alice.
+  \item \emph{Tenant move.} A ciphertext from tenant $P$ is stored in tenant $Q$'s table; the application decrypts for $Q$.
+  \item \emph{Field move.} The ciphertext of \code{note[*].text} is written into the \code{effectiveDateTime} column.
+  \item \emph{Stale replay after retirement.} A ciphertext written before a key rotation is presented after the old key is retired.
+\end{itemize}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{fig5-0_record_swap}
+\caption{The record-swap attack. The adversary copies Bob's ciphertext into Alice's row; the application, reading Alice's row, decrypts for Alice. Outcome by scheme, and the measured matrix for all four manipulations.}
+\label{fig:record-swap}
+\end{figure}
+
+\begin{table}[t]
+\centering\small
+\caption{Outcome of each storage-layer manipulation. ``Accepted'' means the application received plaintext with no error, that is, the wrong patient's data presented as the right one. All results from \code{paper/evaluation/record\_swap.py}.}
+\label{tab:swap}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Scheme & Patient swap & Tenant move & Field move & Stale replay \\
+\midrule
+AES-256-CBC + HMAC, shared key & \SwapCbcPatient & \SwapCbcTenant & \SwapCbcField & \SwapCbcReplay \\
+AES-256-GCM, key per tenant & \SwapGcmPatient & \SwapGcmTenant & \SwapGcmField & \SwapGcmReplay \\
+CPDPM & \SwapCpdpmPatient & \SwapCpdpmTenant & \SwapCpdpmField & \SwapCpdpmReplay \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:swap} gives the result. The shared-key baseline accepts every manipulation: its MAC proves the bytes were produced under the key, not that they belong to this row. The per-tenant baseline rejects only the tenant move, because the key differs, and accepts the other three. CPDPM rejects all four. The same swap driven through the FHIR layer, Bob's encrypted \code{Condition} stored in Alice's row and decrypted for Alice, is likewise \SwapFhir{}. Beyond the four manipulations, the manifest of Section~\ref{sec:fhir} detects deletion, reordering and duplication of encrypted fields and per-field replay within a resource; these are exercised in the test suite rather than repeated here.
+
+Two honest notes. Per-tenant keys already stop the tenant move, so CPDPM's contribution is the other three columns. And the stale-replay row measures retirement, not replay within a live key version; the latter is discussed in Section~\ref{sec:discussion}.
+
+\subsection{Cost}
+\label{sec:cost}
+
+Encryption and decryption latency were measured with \code{pyperf} (eight processes, three values each, one warm-up) for FHIR bundles of 1, 10, 100 and 1{,}000 observations, from \BytesOne{} to \BytesThousand{} bytes, against three widely used libraries with pre-established keys and no password derivation on the hot path: raw AES-256-GCM from \code{cryptography}, Fernet, and Google Tink's AES-256-GCM. CPDPM was measured in both suites. The reported run is on \BenchPlatform{} under Python \BenchPython; the same suite was run on an x86-64 GitHub Actions runner (\XCpu) and is summarised below. Figures~\ref{fig:latency} and~\ref{fig:overhead} show the results.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{fig5-1_latency}
+\caption{Median latency per operation, log scale, for FHIR bundle payloads of 1 to 1{,}000 observations.}
+\label{fig:latency}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.8\linewidth]{fig5-2_overhead}
+\caption{Encryption time relative to raw AES-256-GCM, log scale. CPDPM's fixed per-operation cost is amortised as payloads grow; Fernet's relative cost grows with payload size.}
+\label{fig:overhead}
+\end{figure}
+
+CPDPM with AES-GCM carries a fixed cost of about \CpdpmFixedUs\,$\mu$s per operation: two HKDF derivations, the commitment, and header and context encoding. It then tracks raw AES-GCM. On a single \BytesOne-byte record it is \CpdpmRatioOne$\times$ the raw floor at \CpdpmUsOne\,$\mu$s; at \BytesHundred{} bytes it is \CpdpmRatioHundred$\times$; at \BytesThousand{} bytes it is \CpdpmRatioThousand$\times$. Fernet, the most common ``just encrypt it'' choice in Python, is \FernetRatioOne$\times$ at one record and \FernetRatioThousand$\times$ at a thousand, so CPDPM is faster than Fernet from ten records upward while binding what Fernet does not. Tink is faster than the raw baseline at small sizes because it caches the cipher object where the baseline constructs one per call, which is how application code typically behaves. The FHIR field-level path with three encrypted fields on one observation costs \FhirFieldsEncUs\,$\mu$s to encrypt and \FhirFieldsDecUs\,$\mu$s to decrypt, about 37\,$\mu$s per field including the manifest: per-field key derivation is the price of per-field binding.
+
+The x86-64 run tells the same story with different constants: CPDPM with AES-GCM is \XCpdpmRatioOne$\times$ the raw floor at one record and \XCpdpmRatioThousand$\times$ at a thousand, a fixed cost of about \XCpdpmFixedUs\,$\mu$s, and Fernet is \XFernetRatioThousand$\times$ at a thousand.
+
+One result needs a caveat. The XChaCha20-Poly1305 suite measures \XchachaRatioThousand$\times$ the raw floor at \BytesThousand{} bytes on the arm64 machine and \XXchachaRatioThousand$\times$ on x86-64. A direct comparison on the arm64 machine shows PyNaCl's bundled libsodium encrypting 670\,KB in about 10\,ms where OpenSSL's ChaCha20-Poly1305 takes 0.3\,ms and hardware-accelerated AES-GCM 0.07\,ms; the gap is the library build and the absence of hardware acceleration for ChaCha, not the construction. AES-GCM is the default suite for that reason, and a \code{cryptography}-backed ChaCha20-Poly1305 suite is the natural next addition.

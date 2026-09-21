@@ -1,0 +1,69 @@
+% Context-bound authenticated encryption for clinical records
+% Build: make paper   (tectonic -X compile manuscript/main.tex)
+% Target: Computers & Security (Elsevier, elsarticle). Preprint: IACR ePrint.
+\documentclass[preprint,12pt,a4paper]{elsarticle}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{microtype}
+\usepackage[hidelinks]{hyperref}
+\usepackage{url}
+
+\graphicspath{{figures/}}
+\input{numbers}
+
+% Typography for identifiers and code
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\ctx}{\mathit{ctx}}
+\newcommand{\canon}{\mathsf{canon}}
+\newcommand{\hkdf}{\mathsf{HKDF}}
+\newcommand{\aead}{\mathsf{AEAD}}
+\newcommand{\Kctx}{K_{\ctx}}
+\newcommand{\MK}{\mathit{MK}}
+\newcommand{\concat}{\,\|\,}
+\newcommand{\todo}[1]{\textcolor{red!70!black}{[#1]}}
+
+\lstset{basicstyle=\small\ttfamily,columns=fullflexible,breaklines=true,frame=none}
+
+\journal{Computers \& Security}
+
+\begin{document}
+\begin{frontmatter}
+
+\title{Context-bound authenticated encryption for clinical records}
+
+\author[1]{Ayomide Atunrase\corref{cor1}}
+\ead{atunraseayomide@gmail.com}
+\cortext[cor1]{Corresponding author.}
+\affiliation[1]{organization={Independent Researcher}}
+
+\begin{abstract}
+\input{sections/00-abstract}
+\end{abstract}
+
+\begin{keyword}
+authenticated encryption \sep context binding \sep key commitment \sep electronic health records \sep FHIR \sep key rotation \sep insider threat
+\end{keyword}
+
+\end{frontmatter}
+
+\input{sections/01-introduction}
+\input{sections/02-background}
+\input{sections/03-pretransform}
+\input{sections/04-design}
+\input{sections/05-evaluation}
+\input{sections/06-discussion}
+\input{sections/07-conclusion}
+
+\section*{Availability}
+The implementation, its test suite, the known-answer vectors, and every experiment and figure in this paper are available at \url{https://github.com/Ayo-Cyber/cpdpm-secure}. A single command reproduces all results from a clean container.
+
+\bibliographystyle{elsarticle-num}
+\bibliography{refs}
+
+\end{document}

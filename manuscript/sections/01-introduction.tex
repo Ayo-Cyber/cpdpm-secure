@@ -1,0 +1,21 @@
+\section{Introduction}
+\label{sec:intro}
+
+% YOUR SECTION. The skeleton below is the argument in order; each \todo is a paragraph for you to write.
+% Everything you need to cite is in refs.bib; every number is a macro from numbers.tex.
+
+\todo{Paragraph 1, the setting. Clinical records are encrypted at rest under regulatory pressure (HIPAA technical safeguards, GDPR Article 9/32). The specification that results is almost always a cipher name and a key length. Cite the regulations.}
+
+\todo{Paragraph 2, the gap. That specification is about confidentiality of bytes. It says nothing about the binding between a ciphertext and the row, patient, tenant and field it was written for. Introduce the insider with database write access as the adversary who exploits the gap: a copy of one patient's ciphertext into another patient's row decrypts cleanly and is presented as that patient's data. State plainly that this is not a weakness in AES; it is a property the deployment never asked for.}
+
+\todo{Paragraph 3, the genre. A body of work on ``hybrid'' encryption for health records adds a keyed byte transform in front of AES and reports added security. Say that Section~\ref{sec:pretransform} measures what such a layer can add (at most \KeyspaceLog{} bits, nothing when the key travels) and that this paper spends the same engineering effort on binding instead.}
+
+\paragraph{Contributions}
+\begin{enumerate}
+  \item A precise account, with exhaustive checks rather than argument, of what a byte-level pre-transform layer contributes to a cipher (Section~\ref{sec:pretransform}).
+  \item CPDPM, a context-bound AEAD construction: an injective context encoding, per-context HKDF keys under a versioned master key, key commitment, a single failure mode, a manifest that binds the set of encrypted fields in a FHIR resource, and a streaming mode; with a reduction to standard AEAD security (Section~\ref{sec:design}).
+  \item An empirical demonstration that the construction rejects ciphertext substitution across patients, tenants and fields, and stale replay after key retirement, where shared-key and per-tenant baselines accept them; and a measurement of its cost against raw AES-GCM, Fernet and Tink (Section~\ref{sec:evaluation}).
+  \item An open, reproducible artifact: implementation, tests, known-answer vectors, and every experiment and figure.
+\end{enumerate}
+
+\todo{Closing paragraph: roadmap of the sections.}

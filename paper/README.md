@@ -10,6 +10,10 @@ Reproducible experiments and figures for the thesis and paper. Every number that
 | `diagrams/` | 4, 5 | Hand-authored SVG sources for the explanatory figures (key hierarchy, wire formats, manifest, baseline comparison, record-swap sequence, system architecture). `render.py` makes PDFs with svglib; the committed PNG/PDF pairs were rendered in Chromium for exact fonts. |
 | `figures/` | all | Generated output only. Charts from scripts, diagrams from `diagrams/*.svg`. Never edit by hand. |
 
+## Manuscript
+
+`manuscript/` holds the LaTeX source (Elsevier `elsarticle`, preprint mode). `make paper` regenerates `manuscript/numbers.tex` from the pinned result files and compiles `manuscript/main.pdf` with Tectonic. No measurement appears as a literal in the text; every number is a macro.
+
 ## Running
 
 ```bash

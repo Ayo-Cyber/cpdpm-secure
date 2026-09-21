@@ -1,0 +1,18 @@
+\section{Discussion and limitations}
+\label{sec:discussion}
+
+% YOUR SECTION. Each item below is a paragraph; the substance is in docs/red-team-2026-09.md and docs/threat-model.md.
+
+\todo{Whole-document replay. The manifest detects per-field replay inside a resource but not the replacement of an entire resource, manifest included, by an older version of itself. Preventing that needs a monotonic version in the context, which is application state the library cannot see. State it plainly and say what an application must do.}
+
+\todo{Metadata. Ciphertext lengths, the existence of records, and which fields are encrypted are visible. Length-hiding padding is possible and was not a goal.}
+
+\todo{The context must be authentic. The API takes the context as a required argument and stores none of it, but it cannot stop an application from reading a stored context back. Say why this is the single most important rule for a deployment and how the FHIR layer's derive-at-encrypt, require-at-decrypt asymmetry is designed to make the mistake visible.}
+
+\todo{Host compromise, side channels and availability are out of scope; say so once.}
+
+\todo{Review status. The construction reduces to standard notions but the reduction is a sketch, the review was a self-review with fuzzing (cite the red-team document in the artifact), and no third party has examined the code. Invite it.}
+
+\todo{Unicode. NFC normalisation can differ across Unicode versions for newly assigned characters; two deployments on different Python versions could in principle disagree about a context. Rejecting unassigned code points would fix this at the cost of portability; it was not done.}
+
+\todo{On the genre. What Section~\ref{sec:pretransform} implies for how reviewers might read hybrid-encryption papers: ask whether the transform key travels, ask for a reduction, and ask what property the scheme has that the underlying cipher lacks.}

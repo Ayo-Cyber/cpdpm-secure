@@ -64,7 +64,9 @@ Full pyperf run (2 Sep 2026, macOS arm64, Python 3.14, 8 processes × 3 values, 
 
 Reading: cpdpm-gcm carries a fixed cost of about 12 µs per operation (two HKDF-SHA256 derivations, a 32-byte commitment, header and context encoding), then tracks raw AES-GCM. At one small record it is 5x the raw floor and still under 15 µs; Fernet, the most common Python "just encrypt it" choice, is slower than CPDPM from 10 observations up. The field-level path (three fields, one observation) costs 110 µs, about 37 µs per field: per-field HKDF is the price of per-field binding. Tink beats raw `cryptography` at small sizes because it caches the cipher object; the raw baseline constructs `AESGCM(key)` per call, which is how application code usually does it.
 
-**XChaCha caveat, must be stated.** cpdpm-xchacha is 110x the floor at 654 KB. A direct check shows PyNaCl's bundled libsodium encrypts 670 KB in 10.1 ms while `cryptography`'s ChaCha20-Poly1305 does it in 0.29 ms and AES-GCM in 0.07 ms on the same machine. The gap is the PyNaCl wheel's libsodium build on arm64 (no SIMD path), not the design. Report it as an implementation artifact, keep AES-GCM as the default suite, and re-measure on x86-64 in the final run.
+**x86-64 run (21 Sep 2026, GitHub Actions ubuntu runner, AMD EPYC 9V45, Python 3.12; `paper/evaluation/results/benchmark_x86_64.json`).** cpdpm-gcm 5.85x at one record, 1.55x at a thousand (fixed cost ~10 µs); Fernet 71x at a thousand; cpdpm-xchacha 7.3x at one record, 31x at a thousand.
+
+**XChaCha caveat, must be stated.** cpdpm-xchacha is 110x the floor at 654 KB on arm64 and 31x on x86-64. A direct check shows PyNaCl's bundled libsodium encrypts 670 KB in 10.1 ms while `cryptography`'s ChaCha20-Poly1305 does it in 0.29 ms and AES-GCM in 0.07 ms on the same machine. The gap is the PyNaCl wheel's libsodium build on arm64 (no SIMD path), not the design. Report it as an implementation artifact, keep AES-GCM as the default suite, and re-measure on x86-64 in the final run.
 
 ## Chapter 6: Discussion and limitations
 

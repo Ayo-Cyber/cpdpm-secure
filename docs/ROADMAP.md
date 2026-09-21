@@ -16,7 +16,7 @@ Done, in merged and open pull requests on `github.com/Ayo-Cyber/cpdpm-secure`:
 
 Roughly six weeks of slack now sit in the calendar. Spend it on the reading (weeks 1–5, unchanged), on the writing, and on an external red-team read. The writing is yours; the evidence, figures and outline are ready for it.
 
-Still open before submission: repeat the pyperf run on x86-64, the critiqued-genre table for chapter 2, an external review.
+x86-64 benchmark done (21 Sep). Manuscript skeleton with §4 and §5 drafted is in `manuscript/`. Still open: §1, §2 (with the genre table), §3, §6, §7 prose; an external review.
 
 ## Under the tree on 25 December
 

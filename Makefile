@@ -2,7 +2,7 @@ PY ?= python3
 VENV := .venv
 BIN := $(VENV)/bin
 
-.PHONY: setup test coverage lint typecheck analysis evaluation evaluation-fast figures diagrams all clean
+.PHONY: setup test coverage lint typecheck analysis evaluation evaluation-fast figures diagrams paper all clean
 
 ## One-command setup: fresh virtualenv with the package and dev tools.
 setup:
@@ -50,6 +50,13 @@ figures:
 ## PNG/PDF pairs were rendered in Chromium for exact fonts, see paper/README.md).
 diagrams:
 	$(BIN)/python -m paper.diagrams.render
+
+## The manuscript. Numbers are regenerated from the pinned results first, so the text
+## cannot drift from the evidence. Needs tectonic (brew install tectonic).
+paper:
+	$(BIN)/python -m paper.manuscript_numbers
+	cd manuscript && tectonic -X compile --keep-logs main.tex
+	@echo "manuscript/main.pdf"
 
 ## Everything the paper needs, from a clean checkout: gate, analysis, evaluation, figures.
 all: test analysis evaluation figures

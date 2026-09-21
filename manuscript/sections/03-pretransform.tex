@@ -1,0 +1,33 @@
+\section{What a pre-transform layer can and cannot add}
+\label{sec:pretransform}
+
+% YOUR SECTION, with every number already wired in as a macro.
+% Evidence: paper/analysis/results/pre_transform.json and fair_benchmark.json; Figures 3-1 and 3-2.
+
+\todo{Opening paragraph. State the pattern abstractly: a scheme $\mathsf{Enc}'(m) = \mathsf{Enc}(T_k(m))$ where $T_k$ is a keyed bijection on bytes applied before a standard cipher. Say that this section analyses the pattern, implemented from its published descriptions, not any particular deployed system. The most common instance is the per-byte affine map $T_{a,b}(x_i) = (a x_i + b + i) \bmod 256$ with $a$ odd, and that is the instance measured.}
+
+\subsection{Keyspace}
+\todo{The description of such a layer often carries many parameters (a prime modulus, a polynomial degree, a list of exponents). Enumerating every $(a, b)$ pair over the full byte range and hashing the resulting transform of the 256 canonical inputs yields exactly \Keyspace{} distinct transforms, that is $2^{\KeyspaceLog}$: 128 odd multipliers times 256 offsets. Parameters that do not change the map do not enlarge the keyspace. Write this as a short paragraph and refer to the exhaustive check in the artifact.}
+
+\subsection{Diffusion}
+\todo{Flipping one bit of one input byte changes exactly \DiffusionMean{} output byte, in every one of \DiffusionTrials{} trials. A block cipher over the same 256 bytes would change about half. The layer therefore adds no diffusion, and any statistical property observed at the output is the cipher's, not the layer's. One paragraph.}
+
+\subsection{Security}
+\todo{The argument, stated once and cleanly. If $T_k$ is public, or $k$ is transmitted with the ciphertext (as it must be if the receiver does not share it), then any adversary against $\mathsf{Enc}'$ applies $T_k$ to its chosen plaintexts and $T_k^{-1}$ to any recovered plaintext and becomes an adversary against $\mathsf{Enc}$ with identical advantage; conversely $\mathsf{Enc}'$ inherits every property of $\mathsf{Enc}$. The composite is exactly as secure as the cipher behind it. If $k$ is kept secret and never transmitted, it adds at most $\log_2$ of the keyspace, here \KeyspaceLog{} bits. Cite the standard hybrid argument \cite{bellare2000ae}. No new theorem is needed.}
+
+\subsection{Cost}
+\todo{Figure~\ref{fig:pretransform-cost} and Figure~\ref{fig:pretransform-decomp}. With the key-derivation function counted identically on both sides and in both directions, the layer costs \PreEncOneK$\times$ at 1\,KB and \PreEncEightK$\times$ at 8\,KB (that is, nothing), \PreEncSixtyFourK$\times$ at 64\,KB and \PreEncFiveTwelveK$\times$ at 512\,KB. The decomposition shows the entire difference is the byte loop (\PreLoopFiveTwelveK\,ms at 512\,KB) against a fixed \PbkdfMs\,ms of PBKDF2. Make the point that the layer is free where it is useless and expensive where it is still useless, and close by redirecting the effort: the same engineering budget buys binding, which changes what an adversary can do. That is Section~\ref{sec:design}.}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{fig3-1_pre_transform_cost}
+\caption{The same password-based AES-256-CBC+HMAC pipeline with and without a per-byte affine pre-transform, key derivation counted on both sides. Medians with interquartile range over 15 runs. Ratios are annotated. The layer is free at record sizes and a pure-Python tax at file sizes.}
+\label{fig:pretransform-cost}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.8\linewidth]{fig3-2_time_decomposition}
+\caption{Where a pre-transform pipeline spends its time: PBKDF2 at 100{,}000 iterations, AES-256-CBC with HMAC, and the transform loop, stacked, against the measured total. The fixed key-derivation cost dominates until the loop overtakes it near 64\,KB.}
+\label{fig:pretransform-decomp}
+\end{figure}

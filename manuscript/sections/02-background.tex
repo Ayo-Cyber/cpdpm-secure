@@ -1,0 +1,31 @@
+\section{Background and related work}
+\label{sec:background}
+
+% YOUR SECTION. Four subsections; the first three are short and can be written from refs.bib.
+% The fourth is the reading you are doing this week and is the part reviewers will weigh most.
+
+\subsection{Authenticated encryption with associated data}
+\todo{One paragraph. Define AEAD informally: confidentiality of the plaintext, integrity of plaintext and associated data, the associated data authenticated but not encrypted. Cite \cite{rogaway2002aead,rfc5116}. Name AES-GCM \cite{nist-gcm} and ChaCha20-Poly1305 \cite{rfc8439}; mention XChaCha \cite{xchacha-draft}. State that associated data is the standard mechanism for binding a ciphertext to its context and that it is widely underused in storage encryption.}
+
+\subsection{Key commitment}
+\todo{One paragraph. AES-GCM and ChaCha20-Poly1305 do not commit to their key: one ciphertext can decrypt validly under two keys \cite{albertini2022commitment}. In password-derived-key settings this enables partitioning-oracle attacks \cite{len2021partitioning}. Cite the padding-fix mitigation and committing constructions \cite{albertini2022commitment,bellare2022committing,grubbs2017franking}.}
+
+\subsection{Envelope encryption and encryption context in practice}
+\todo{One paragraph. Cloud key services bind key use to an ``encryption context'' \cite{aws-kms-context}; Tink documents associated data as the way to bind a ciphertext to where it is used \cite{tink-aead}. The database-adversary literature explains why storage-layer integrity matters: \cite{popa2011cryptdb,grubbs2017encrypted-db}. Position CPDPM as bringing that discipline to clinical records with a fixed, injective context and per-context keys.}
+
+\subsection{Hybrid encryption for health records}
+\label{sec:genre}
+\todo{This is the reading. Collect roughly a dozen papers that add a reversible byte-level transform (affine map, substitution, chaotic map, ``polynomial'' layer) before AES and claim added security for EHR data. Summarise them in Table~\ref{tab:genre}: venue, year, the transform, the claim, the evidence offered (typically entropy or histogram plots and a speed table), and whether the transform key is public, transmitted, or secret in the described system. Do not name-call; state what each paper shows and does not show. Section~\ref{sec:pretransform} then measures the pattern.}
+
+\begin{table}[t]
+\centering\small
+\caption{Hybrid pre-transform schemes for health-record encryption. \todo{fill from your reading}}
+\label{tab:genre}
+\begin{tabular}{@{}llllll@{}}
+\toprule
+Work & Year & Pre-transform & Security claim & Evidence offered & Transform key \\
+\midrule
+\todo{...} & & & & & \\
+\bottomrule
+\end{tabular}
+\end{table}

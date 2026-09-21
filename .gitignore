@@ -188,3 +188,10 @@ paper/*/results/
 # browser preview artefacts
 .playwright-mcp/
 sheet-*.png
+
+# manuscript build products
+manuscript/*.pdf
+manuscript/*.log
+manuscript/*.aux
+manuscript/*.bbl
+manuscript/*.blg

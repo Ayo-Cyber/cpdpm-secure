@@ -1,0 +1,213 @@
+% Verify every entry against the publisher before submission. Fields marked TODO need pages/DOI.
+
+@inproceedings{rogaway2002aead,
+  author    = {Phillip Rogaway},
+  title     = {Authenticated-Encryption with Associated-Data},
+  booktitle = {Proceedings of the 9th ACM Conference on Computer and Communications Security (CCS)},
+  year      = {2002},
+  pages     = {98--107},
+  publisher = {ACM}
+}
+
+@techreport{rfc5116,
+  author      = {David McGrew},
+  title       = {An Interface and Algorithms for Authenticated Encryption},
+  institution = {Internet Engineering Task Force},
+  type        = {RFC},
+  number      = {5116},
+  year        = {2008}
+}
+
+@techreport{nist-gcm,
+  author      = {Morris Dworkin},
+  title       = {Recommendation for Block Cipher Modes of Operation: Galois/Counter Mode (GCM) and GMAC},
+  institution = {National Institute of Standards and Technology},
+  type        = {Special Publication},
+  number      = {800-38D},
+  year        = {2007}
+}
+
+@techreport{rfc8439,
+  author      = {Yoav Nir and Adam Langley},
+  title       = {ChaCha20 and Poly1305 for IETF Protocols},
+  institution = {Internet Engineering Task Force},
+  type        = {RFC},
+  number      = {8439},
+  year        = {2018}
+}
+
+@misc{xchacha-draft,
+  author = {Scott Arciszewski},
+  title  = {XChaCha: eXtended-nonce ChaCha and AEAD\_XChaCha20\_Poly1305},
+  note   = {Internet-Draft draft-irtf-cfrg-xchacha, IRTF Crypto Forum Research Group},
+  year   = {2020}
+}
+
+@techreport{rfc5869,
+  author      = {Hugo Krawczyk and Pasi Eronen},
+  title       = {HMAC-based Extract-and-Expand Key Derivation Function (HKDF)},
+  institution = {Internet Engineering Task Force},
+  type        = {RFC},
+  number      = {5869},
+  year        = {2010}
+}
+
+@inproceedings{krawczyk2010hkdf,
+  author    = {Hugo Krawczyk},
+  title     = {Cryptographic Extraction and Key Derivation: The HKDF Scheme},
+  booktitle = {Advances in Cryptology -- CRYPTO 2010},
+  series    = {LNCS},
+  volume    = {6223},
+  pages     = {631--648},
+  publisher = {Springer},
+  year      = {2010}
+}
+
+@techreport{rfc9106,
+  author      = {Alex Biryukov and Daniel Dinu and Dmitry Khovratovich and Simon Josefsson},
+  title       = {Argon2 Memory-Hard Function for Password Hashing and Proof-of-Work Applications},
+  institution = {Internet Engineering Task Force},
+  type        = {RFC},
+  number      = {9106},
+  year        = {2021}
+}
+
+@article{bellare2000ae,
+  author  = {Mihir Bellare and Chanathip Namprempre},
+  title   = {Authenticated Encryption: Relations among Notions and Analysis of the Generic Composition Paradigm},
+  journal = {Journal of Cryptology},
+  volume  = {21},
+  number  = {4},
+  pages   = {469--491},
+  year    = {2008}
+}
+
+@inproceedings{albertini2022commitment,
+  author    = {Ange Albertini and Thai Duong and Shay Gueron and Stefan K{\"o}lbl and Atul Luykx and Sophie Schmieg},
+  title     = {How to Abuse and Fix Authenticated Encryption Without Key Commitment},
+  booktitle = {31st USENIX Security Symposium},
+  year      = {2022},
+  pages     = {3291--3308},
+  publisher = {USENIX Association}
+}
+
+@inproceedings{len2021partitioning,
+  author    = {Julia Len and Paul Grubbs and Thomas Ristenpart},
+  title     = {Partitioning Oracle Attacks},
+  booktitle = {30th USENIX Security Symposium},
+  year      = {2021},
+  pages     = {195--212},
+  publisher = {USENIX Association}
+}
+
+@inproceedings{grubbs2017franking,
+  author    = {Paul Grubbs and Jiahui Lu and Thomas Ristenpart},
+  title     = {Message Franking via Committing Authenticated Encryption},
+  booktitle = {Advances in Cryptology -- CRYPTO 2017},
+  series    = {LNCS},
+  volume    = {10403},
+  pages     = {66--97},
+  publisher = {Springer},
+  year      = {2017}
+}
+
+@inproceedings{bellare2022committing,
+  author    = {Mihir Bellare and Viet Tung Hoang},
+  title     = {Efficient Schemes for Committing Authenticated Encryption},
+  booktitle = {Advances in Cryptology -- EUROCRYPT 2022},
+  series    = {LNCS},
+  volume    = {13276},
+  pages     = {845--875},
+  publisher = {Springer},
+  year      = {2022}
+}
+
+@inproceedings{hoang2015stream,
+  author    = {Viet Tung Hoang and Reza Reyhanitabar and Phillip Rogaway and Damian Viz{\'a}r},
+  title     = {Online Authenticated-Encryption and its Nonce-Reuse Misuse-Resistance},
+  booktitle = {Advances in Cryptology -- CRYPTO 2015},
+  series    = {LNCS},
+  volume    = {9215},
+  pages     = {493--517},
+  publisher = {Springer},
+  year      = {2015}
+}
+
+@inproceedings{popa2011cryptdb,
+  author    = {Raluca Ada Popa and Catherine M. S. Redfield and Nickolai Zeldovich and Hari Balakrishnan},
+  title     = {CryptDB: Protecting Confidentiality with Encrypted Query Processing},
+  booktitle = {Proceedings of the 23rd ACM Symposium on Operating Systems Principles (SOSP)},
+  year      = {2011},
+  pages     = {85--100},
+  publisher = {ACM}
+}
+
+@inproceedings{grubbs2017encrypted-db,
+  author    = {Paul Grubbs and Thomas Ristenpart and Vitaly Shmatikov},
+  title     = {Why Your Encrypted Database Is Not Secure},
+  booktitle = {Proceedings of the 16th Workshop on Hot Topics in Operating Systems (HotOS)},
+  year      = {2017},
+  pages     = {162--168},
+  publisher = {ACM}
+}
+
+@misc{tink-aead,
+  author       = {{Google}},
+  title        = {Tink: Authenticated Encryption with Associated Data},
+  howpublished = {\url{https://developers.google.com/tink/aead}},
+  note         = {Accessed September 2026}
+}
+
+@misc{aws-kms-context,
+  author       = {{Amazon Web Services}},
+  title        = {AWS Key Management Service Developer Guide: Encryption Context},
+  howpublished = {\url{https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html\#encrypt_context}},
+  note         = {Accessed September 2026}
+}
+
+@misc{fhir-r4,
+  author       = {{HL7 International}},
+  title        = {FHIR Release 4 Specification},
+  howpublished = {\url{https://hl7.org/fhir/R4/}},
+  year         = {2019},
+  note         = {Accessed September 2026}
+}
+
+@misc{hipaa-security-rule,
+  author       = {{U.S. Department of Health and Human Services}},
+  title        = {45 CFR \S 164.312: Technical Safeguards},
+  howpublished = {Code of Federal Regulations},
+  year         = {2013}
+}
+
+@misc{gdpr,
+  author       = {{European Parliament and Council}},
+  title        = {Regulation (EU) 2016/679 (General Data Protection Regulation), Articles 9 and 32},
+  year         = {2016}
+}
+
+@techreport{nist-sp800-57,
+  author      = {Elaine Barker},
+  title       = {Recommendation for Key Management: Part 1 -- General},
+  institution = {National Institute of Standards and Technology},
+  type        = {Special Publication},
+  number      = {800-57 Part 1 Rev. 5},
+  year        = {2020}
+}
+
+@misc{kaggle-stroke,
+  author       = {fedesoriano},
+  title        = {Stroke Prediction Dataset},
+  howpublished = {\url{https://www.kaggle.com/datasets/fedesoriano/stroke-prediction-dataset}},
+  note         = {Kaggle. Accessed September 2026}
+}
+
+@article{maciver2019hypothesis,
+  author  = {David R. MacIver and Zac Hatfield-Dodds and others},
+  title   = {Hypothesis: A new approach to property-based testing},
+  journal = {Journal of Open Source Software},
+  volume  = {4},
+  number  = {43},
+  pages   = {1891},
+  year    = {2019}
+}
