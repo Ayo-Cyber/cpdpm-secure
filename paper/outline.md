@@ -45,8 +45,8 @@ Sections follow `docs/design.md`: context and canonical encoding (§3, injectivi
 
 | Scheme | Patient swap | Tenant move | Field move | Stale replay |
 |---|---|---|---|---|
-| AES-256-CBC + HMAC, one shared key | accepted | accepted | accepted | accepted |
-| AES-256-GCM, key per tenant, no AAD | accepted | rejected | accepted | accepted |
+| AES-256-CBC + HMAC, one shared key | accepted | accepted | accepted | n/a (no key versioning) |
+| AES-256-GCM, key per tenant, no AAD | accepted | rejected | accepted | n/a (no key versioning) |
 | CPDPM | rejected | rejected | rejected | rejected |
 
 Honest note for the text: per-tenant keys already stop the tenant move; CPDPM's contribution is the other three columns. Also report the FHIR-layer swap and the manifest's structural detections.

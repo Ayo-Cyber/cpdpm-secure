@@ -14,7 +14,10 @@ Attacks
   patient-swap   Bob's ciphertext stored in Alice's row, decrypted for Alice
   tenant-move    a tenant-P ciphertext stored under tenant Q, decrypted for Q
   field-move     the ciphertext of note[*].text stored in effectiveDateTime
-  stale-replay   a ciphertext from before key rotation and retirement, replayed
+  stale-replay   a ciphertext from before key rotation and retirement, replayed.
+                 Only CPDPM has key versioning; for the baselines this column reports
+                 "not applicable" rather than a failed check, because there is no
+                 retirement to fail.
 
 Run: python -m paper.evaluation.record_swap
 """
@@ -50,6 +53,7 @@ class CbcHmac:
     """Typical shared-key design: AES-256-CBC + HMAC-SHA256 under one shared key, random IV."""
 
     name = "AES-256-CBC + HMAC, one shared key"
+    has_key_versioning = False
 
     def __init__(self) -> None:
         self.key = os.urandom(32)
@@ -91,6 +95,7 @@ class CbcHmac:
 
 class PlainGCM:
     name = "AES-256-GCM, key per tenant, no AAD"
+    has_key_versioning = False
 
     def __init__(self) -> None:
         self.keys = {TENANT_P: os.urandom(32), TENANT_Q: os.urandom(32)}
@@ -111,6 +116,7 @@ class PlainGCM:
 
 class V2:
     name = "CPDPM (this work)"
+    has_key_versioning = True
 
     def __init__(self) -> None:
         self.keyring = Keyring.generate()
@@ -178,11 +184,19 @@ def run_scheme(scheme: Any) -> dict[str, Any]:
     results["bob_note_for_reference"] = bob["note"][0]["text"]
 
     # Stale replay: keep an old ciphertext, rotate and retire, then present it.
+    # A scheme without key versioning has nothing to retire; report the missing
+    # capability rather than scoring a check it cannot perform.
     stale = alice_date
-    scheme.rotate_and_retire()
-    results["stale_replay_after_retirement"] = attempt(
-        lambda: scheme.decrypt_field(TENANT_P, alice_pid, rtype, "effectiveDateTime", stale)
-    )
+    if scheme.has_key_versioning:
+        scheme.rotate_and_retire()
+        results["stale_replay_after_retirement"] = attempt(
+            lambda: scheme.decrypt_field(TENANT_P, alice_pid, rtype, "effectiveDateTime", stale)
+        )
+    else:
+        results["stale_replay_after_retirement"] = {
+            "outcome": "n/a",
+            "note": "no key versioning, so no retirement to test; the old ciphertext stays valid",
+        }
     return results
 
 

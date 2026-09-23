@@ -17,27 +17,4 @@ Practice has converged on the idea this paper formalises for clinical records. A
 
 The adversary that motivates them is the one the encrypted-database literature has studied for a decade. CryptDB made the case that a database server should be treated as untrusted and that encryption alone does not prevent it from serving wrong answers~\cite{popa2011cryptdb}. Grubbs, Ristenpart and Shmatikov distinguished the snapshot attacker, who sees the database once, from the persistent attacker, who observes and manipulates it over time, and argued that most encrypted-database security claims hold only against the former~\cite{grubbs2017encrypted-db}. The insider with write access in Section~\ref{sec:threat} is a persistent attacker whose goal is integrity of association rather than confidentiality: not to read a record but to relocate it.
 
-\subsection{Hybrid encryption for health records}
-\label{sec:genre}
-
-% THE READING. Fill Table 1 from the papers you collect; then this paragraph and the closing one write themselves.
-% For each paper record: venue, year, the pre-transform (affine / substitution / chaotic map / polynomial / other),
-% the security claim as stated, the evidence offered (entropy, histogram, NPCR/UACI, speed table, none), and whether
-% the transform key is secret, transmitted with the ciphertext, or fixed in the code. Twelve is enough.
-
-A parallel literature on encrypting electronic health records has pursued a different route to security beyond a standard cipher. Its recurring design places a keyed, byte-level, reversible transform in front of AES: an affine map on byte values, a substitution table, a sequence derived from a chaotic map, or a polynomial evaluated over a small field. The resulting schemes are described as hybrid, layered or enhanced, and the added layer is presented as additional resistance to cryptanalysis. Table~\ref{tab:genre} summarises representative examples.
-
-\begin{table}[t]
-\centering\small
-\caption{Hybrid pre-transform schemes for health-record encryption. \todo{fill from your reading; keep the columns}}
-\label{tab:genre}
-\begin{tabular}{@{}p{2.2cm}cp{2.6cm}p{3.2cm}p{2.8cm}p{1.9cm}@{}}
-\toprule
-Work & Year & Pre-transform & Security claim & Evidence offered & Transform key \\
-\midrule
-\todo{author} & \todo{yyyy} & \todo{affine map} & \todo{``resists brute force''} & \todo{entropy plot, speed table} & \todo{transmitted} \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-Two features of this literature motivate Section~\ref{sec:pretransform}. First, the evidence offered for the added layer is typically statistical, entropy or histogram uniformity of the ciphertext, or a speed comparison, rather than a reduction; and a statistical property of AES output is a property of AES, not of the layer in front of it. Second, the transform key is in most designs either fixed in the implementation or transmitted alongside the ciphertext so that the receiver can invert it, in which case it is public. Section~\ref{sec:pretransform} implements the most common instance from its published description and measures exactly what it adds.
+\input{sections/02-background-genre}

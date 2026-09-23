@@ -98,20 +98,20 @@
   <text x="440" y="566" font-size="13" font-weight="700" fill="#52514e" text-anchor="middle">PATIENT SWAP</text>
   <text x="620" y="566" font-size="13" font-weight="700" fill="#52514e" text-anchor="middle">TENANT MOVE</text>
   <text x="800" y="566" font-size="13" font-weight="700" fill="#52514e" text-anchor="middle">FIELD MOVE</text>
-  <text x="1010" y="566" font-size="13" font-weight="700" fill="#52514e" text-anchor="middle">STALE REPLAY AFTER RETIREMENT</text>
+  <text x="1010" y="566" font-size="13" font-weight="700" fill="#52514e" text-anchor="middle">STALE REPLAY AFTER KEY RETIREMENT</text>
   <line x1="40" y1="576" x2="1160" y2="576" stroke="#d9d9d5" stroke-width="1"/>
 
   <text x="40" y="604" font-size="14.5" fill="#0b0b0b">AES-256-CBC + HMAC, one shared key</text>
   <text x="440" y="604" font-size="14" font-weight="700" fill="#d03b3b" text-anchor="middle">accepted</text>
   <text x="620" y="604" font-size="14" font-weight="700" fill="#d03b3b" text-anchor="middle">accepted</text>
   <text x="800" y="604" font-size="14" font-weight="700" fill="#d03b3b" text-anchor="middle">accepted</text>
-  <text x="1010" y="604" font-size="14" font-weight="700" fill="#d03b3b" text-anchor="middle">accepted</text>
+  <text x="1010" y="604" font-size="13" fill="#52514e" text-anchor="middle">n/a, no key versioning</text>
 
   <text x="40" y="640" font-size="14.5" fill="#0b0b0b">AES-256-GCM, key per tenant, no AAD</text>
   <text x="440" y="640" font-size="14" font-weight="700" fill="#d03b3b" text-anchor="middle">accepted</text>
   <text x="620" y="640" font-size="14" font-weight="700" fill="#0b7a0b" text-anchor="middle">rejected</text>
   <text x="800" y="640" font-size="14" font-weight="700" fill="#d03b3b" text-anchor="middle">accepted</text>
-  <text x="1010" y="640" font-size="14" font-weight="700" fill="#d03b3b" text-anchor="middle">accepted</text>
+  <text x="1010" y="640" font-size="13" fill="#52514e" text-anchor="middle">n/a, no key versioning</text>
 
   <text x="40" y="676" font-size="14.5" fill="#0b0b0b">CPDPM (this work)</text>
   <text x="440" y="676" font-size="14" font-weight="700" fill="#0b7a0b" text-anchor="middle">rejected</text>

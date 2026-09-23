@@ -1,0 +1,25 @@
+\subsection{Hybrid and chaotic encryption for health records and medical images}
+\label{sec:genre}
+
+A parallel literature on protecting health records and medical images has pursued a different route to security beyond a standard cipher. Its recurring design places a keyed, reversible transform before, inside or instead of a block cipher: a chaotic map that permutes or diffuses bytes or pixels, a substitution box generated from a chaotic sequence, a finite-field transform, or an affine or polynomial map on byte values. The resulting schemes are described as hybrid, layered, dual-layer or enhanced, and the added stage is presented as additional resistance to attack. Table~\ref{tab:genre} characterises representative examples from their abstracts; three entries whose abstracts sit behind publisher access are characterised from title and metadata only and are marked accordingly.
+
+\begin{table}[t]
+\centering\footnotesize
+\caption{Hybrid pre-transform and chaotic schemes for health records and medical images, characterised from the published abstract. ``Statistical'' evidence means entropy, histogram, correlation, NPCR or UACI figures on ciphertext. Key column: how the transform key reaches the receiver, where the abstract says.}
+\label{tab:genre}
+\begin{tabular}{@{}p{2.5cm}cp{3.1cm}p{2.9cm}p{2.5cm}p{2.3cm}@{}}
+\toprule
+Work & Year & Transform stage & Security claim & Evidence & Transform key \\
+\midrule
+Hashim et al.~\cite{hashim2021hybridaes} & 2021 & Quadratic chaotic map as preprocessing, then AES & ``Broad enough to avoid brute-force attacks'' & Statistical; key sensitivity & Not stated \\
+Bayesh et al.~\cite{bayesh2025chaoticaes} & 2025 & Logistic map drives ShiftRows; Henon map generates S-boxes inside AES-128; XOR diffusion after & Outperforms chaos-based and hybrid AES methods & Statistical (entropy 7.997, NPCR, UACI) & Static and session keys embedded in a QR code carried with the data \\
+Asiri et al.~\cite{asiri2025bitplane} & 2025 & Chen chaotic map shuffles and diffuses bit planes; no standard cipher & ``High degree of resilience to attacks'' & Statistical; key space $(10^{90})^8$ & Initial conditions derived from a hash of the plaintext \\
+Ravichandran et al.~\cite{ravichandran2025shuffling} & 2025 & Chaotic selective shuffling, intra- and inter-pixel diffusion; no standard cipher stated & Resists chosen-plaintext and chosen-ciphertext attacks & Attack analyses & Seeds derived from a hash of intermediate images \\
+Ahmed et al.~\cite{ahmed2023hyperchaotic} & 2023 & 4D-hyperchaotic S-boxes with logistic maps (title) & \todo{confirm from full text} & \todo{confirm} & \todo{confirm} \\
+Kiah et al.~\cite{kiah2013aeshybrid} & 2013 & AES with SOAP/XML transport and SHA-1 (title) & \todo{confirm from full text} & \todo{confirm} & \todo{confirm} \\
+Zhang et al.~\cite{zhang2026finitefield} & 2026 & Finite-field transform with conservative hyperchaos (title) & \todo{confirm from full text} & \todo{confirm} & \todo{confirm} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Three features of this literature motivate Section~\ref{sec:pretransform}, and we state them carefully because the schemes in Table~\ref{tab:genre} are not all alike. First, the evidence offered for the added stage is, in every abstract we examined, statistical: entropy, histogram uniformity, correlation, or the NPCR and UACI differential measures. Where a standard cipher sits in the pipeline, as in Hashim et al.\ and Bayesh et al., a statistical property of the output is a property of that cipher and would be observed with the added stage removed; where no standard cipher is present, as in Asiri et al.\ and Ravichandran et al., the statistics describe the chaotic construction itself, and a reduction to a standard assumption is not offered. Second, where the abstracts describe how the transform key reaches the receiver, it travels with the data, embedded in a carrier image, or is derived from the plaintext, so that the receiver must be sent it; in either case it is available to an adversary who holds the ciphertext. Third, and most relevant to this paper, none of these schemes binds a ciphertext to the record, patient or field it was written for; each is a confidentiality mechanism for bytes, evaluated as such. Section~\ref{sec:pretransform} implements the most common pre-transform instance from its published description and measures exactly what it adds.

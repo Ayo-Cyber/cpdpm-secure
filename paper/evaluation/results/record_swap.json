@@ -1,6 +1,6 @@
 {
   "_meta": {
-    "generated_utc": "2026-09-02T13:13:56+00:00",
+    "generated_utc": "2026-09-23T14:27:13+00:00",
     "machine": "arm64",
     "python": "3.14.6",
     "script": "record_swap",
@@ -24,8 +24,8 @@
       },
       "scheme": "AES-256-CBC + HMAC, one shared key",
       "stale_replay_after_retirement": {
-        "outcome": "accepted",
-        "returned": "2026-01-15T09:30:00Z"
+        "note": "no key versioning, so no retirement to test; the old ciphertext stays valid",
+        "outcome": "n/a"
       },
       "tenant_move": {
         "outcome": "accepted",
@@ -49,8 +49,8 @@
       },
       "scheme": "AES-256-GCM, key per tenant, no AAD",
       "stale_replay_after_retirement": {
-        "outcome": "accepted",
-        "returned": "2026-01-15T09:30:00Z"
+        "note": "no key versioning, so no retirement to test; the old ciphertext stays valid",
+        "outcome": "n/a"
       },
       "tenant_move": {
         "error_type": "InvalidTag",
@@ -94,14 +94,14 @@
       "control": "accepted",
       "field_move": "accepted",
       "patient_swap": "accepted",
-      "stale_replay_after_retirement": "accepted",
+      "stale_replay_after_retirement": "n/a",
       "tenant_move": "accepted"
     },
     "AES-256-GCM, key per tenant, no AAD": {
       "control": "accepted",
       "field_move": "accepted",
       "patient_swap": "accepted",
-      "stale_replay_after_retirement": "accepted",
+      "stale_replay_after_retirement": "n/a",
       "tenant_move": "rejected"
     },
     "CPDPM (this work)": {

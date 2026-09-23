@@ -21,7 +21,7 @@ Four manipulations by an adversary with database write access, illustrated in Fi
   \item \emph{Patient swap.} Bob's ciphertext is copied into Alice's row; the application decrypts for Alice.
   \item \emph{Tenant move.} A ciphertext from tenant $P$ is stored in tenant $Q$'s table; the application decrypts for $Q$.
   \item \emph{Field move.} The ciphertext of \code{note[*].text} is written into the \code{effectiveDateTime} column.
-  \item \emph{Stale replay after retirement.} A ciphertext written before a key rotation is presented after the old key is retired.
+  \item \emph{Stale replay after key retirement.} A ciphertext written before a key rotation is presented after the old key is retired. Only CPDPM has key versioning, so for the two baselines this column records a missing capability rather than a failed check.
 \end{itemize}
 
 \begin{figure}[t]
@@ -33,7 +33,7 @@ Four manipulations by an adversary with database write access, illustrated in Fi
 
 \begin{table}[t]
 \centering\small
-\caption{Outcome of each storage-layer manipulation. ``Accepted'' means the application received plaintext with no error, that is, the wrong patient's data presented as the right one. All results from \code{paper/evaluation/record\_swap.py}.}
+\caption{Outcome of each storage-layer manipulation. ``Accepted'' means the application received plaintext with no error, that is, the wrong patient's data presented as the right one. ``n/a'' means the scheme has no key versioning and so no retirement to test. All results from \code{paper/evaluation/record\_swap.py}.}
 \label{tab:swap}
 \begin{tabular}{@{}lcccc@{}}
 \toprule
@@ -46,9 +46,9 @@ CPDPM & \SwapCpdpmPatient & \SwapCpdpmTenant & \SwapCpdpmField & \SwapCpdpmRepla
 \end{tabular}
 \end{table}
 
-Table~\ref{tab:swap} gives the result. The shared-key baseline accepts every manipulation: its MAC proves the bytes were produced under the key, not that they belong to this row. The per-tenant baseline rejects only the tenant move, because the key differs, and accepts the other three. CPDPM rejects all four. The same swap driven through the FHIR layer, Bob's encrypted \code{Condition} stored in Alice's row and decrypted for Alice, is likewise \SwapFhir{}. Beyond the four manipulations, the manifest of Section~\ref{sec:fhir} detects deletion, reordering and duplication of encrypted fields and per-field replay within a resource; these are exercised in the test suite rather than repeated here.
+Table~\ref{tab:swap} gives the result. The shared-key baseline accepts all three substitutions: its MAC proves the bytes were produced under the key, not that they belong to this row. The per-tenant baseline rejects only the tenant move, because the key differs, and accepts the other two. CPDPM rejects all three, and after retirement of the key version under which a ciphertext was written, rejects that ciphertext as well; the baselines have a single long-lived key, so a stale ciphertext under them stays valid indefinitely, and the column reports that as a capability difference rather than a failed check. The same swap driven through the FHIR layer, Bob's encrypted \code{Condition} stored in Alice's row and decrypted for Alice, is likewise \SwapFhir{}. Beyond the four manipulations, the manifest of Section~\ref{sec:fhir} detects deletion, reordering and duplication of encrypted fields and per-field replay within a resource; these are exercised in the test suite rather than repeated here.
 
-Two honest notes. Per-tenant keys already stop the tenant move, so CPDPM's contribution is the other three columns. And the stale-replay row measures retirement, not replay within a live key version; the latter is discussed in Section~\ref{sec:discussion}.
+Two honest notes. Per-tenant keys already stop the tenant move, so CPDPM's binding contribution is the patient-swap and field-move columns, and its retirement column is a key-management capability rather than a binding result. And retirement is not replay within a live key version; the latter is discussed in Section~\ref{sec:discussion}.
 
 \subsection{Cost}
 \label{sec:cost}
