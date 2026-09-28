@@ -72,9 +72,10 @@ where $\mathit{hdr}$ is the eleven-byte header of Figure~\ref{fig:wire} followed
 The 32-byte $\mathit{commit}$ prepended to every plaintext is a key commitment in the padding-fix style~\cite{albertini2022commitment}. AES-GCM and ChaCha20-Poly1305 are not key-committing: an adversary who controls a ciphertext can make it decrypt validly under two different keys, which in a password-derived-key setting enables partitioning-oracle attacks~\cite{len2021partitioning}. After decryption the first 32 bytes are compared in constant time against the derived commitment; a ciphertext that authenticates under some other key would have to decrypt to that key's commitment as well, which it cannot. When does this matter here? In the normal path the header names the master-key version, so the receiver holds exactly one candidate master key and there is no partition to exploit. The commitment earns its place on two other paths: when the master key is derived from a password (Section~\ref{sec:keys}), where every candidate password is a candidate key and a partitioning oracle would test many at once; and as defence in depth during migrations or misconfigurations in which a keyring holds several candidates for one version. The commitment label omits the suite where the key label includes it: the commitment is compared, not used as a key, so the two suites may share it, and a value that is the same under both suites means a ciphertext cannot be re-labelled from one suite to the other without also failing the commitment. The cost is 32 bytes per ciphertext and one additional HKDF call. Table~\ref{tab:overhead} gives the measured overhead: \OverheadGcm{} bytes per blob with AES-GCM and \OverheadXchacha{} with XChaCha20-Poly1305, independent of payload size.
 
 \begin{table}[t]
-\centering\small
+\centering\footnotesize
 \caption{Bytes added per ciphertext, measured. Blob overhead is constant: 11-byte header, nonce (12 or 24 bytes), 32-byte commitment, 16-byte tag. The text form adds a 7-byte prefix and base64url expansion. The stream adds 15 bytes plus prefix, commitment and one tag per 64\,KiB chunk.}
 \label{tab:overhead}
+\setlength{\tabcolsep}{4pt}
 \begin{tabular}{@{}rrrrrr@{}}
 \toprule
 Plaintext & GCM blob & GCM text & XChaCha blob & XChaCha text & GCM stream \\
@@ -92,7 +93,7 @@ Decryption has one failure mode. Malformed header, unknown key version, authenti
 \subsection{Field-level encryption of FHIR resources}
 \label{sec:fhir}
 
-Clinical systems exchange records as FHIR resources, JSON documents with a known structure~\cite{fhir-r4}. Encrypting a whole resource defeats search; encrypting nothing defeats the purpose. CPDPM encrypts selected paths. A policy names them, for example \code{code.text} and \code{note[*].text} for a \code{Condition}; each selected value is serialised, encrypted under a context whose field path is the policy path with array indices collapsed to \code{[*]}, and replaced in place by the text form of its ciphertext. Coded fields used for search stay clear. Figure~\ref{fig:manifest} shows the result.
+Clinical systems exchange records as FHIR resources, JSON documents with a known structure~\cite{fhir-r4}. Encrypting a whole resource defeats search; encrypting nothing defeats the purpose. CPDPM encrypts selected paths. A policy names them. For a \code{Condition} resource the policy might select the free-text description of the diagnosis (\code{code.text}) and the clinical notes (\code{note[*].text}). Each selected value is serialised, encrypted under a context whose field path is the policy path with array indices collapsed to \code{[*]}, and replaced in place by the text form of its ciphertext. Coded fields used for search stay clear. Figure~\ref{fig:manifest} shows the result.
 
 \begin{figure}[t]
 \centering

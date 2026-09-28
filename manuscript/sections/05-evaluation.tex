@@ -20,7 +20,7 @@ Four manipulations by an adversary with database write access, illustrated in Fi
 \begin{itemize}
   \item \emph{Patient swap.} Bob's ciphertext is copied into Alice's row; the application decrypts for Alice.
   \item \emph{Tenant move.} A ciphertext from tenant $P$ is stored in tenant $Q$'s table; the application decrypts for $Q$.
-  \item \emph{Field move.} The ciphertext of \code{note[*].text} is written into the \code{effectiveDateTime} column.
+  \item \emph{Field move.} The ciphertext of the note field is written into the column for the effective date, so a value bound to \code{note[*].text} is read as \code{effectiveDateTime}.
   \item \emph{Stale replay after key retirement.} A ciphertext written before a key rotation is presented after the old key is retired. Only CPDPM has key versioning, so for the two baselines this column records a missing capability rather than a failed check.
 \end{itemize}
 
@@ -32,14 +32,15 @@ Four manipulations by an adversary with database write access, illustrated in Fi
 \end{figure}
 
 \begin{table}[t]
-\centering\small
+\centering\footnotesize
 \caption{Outcome of each storage-layer manipulation. ``Accepted'' means the application received plaintext with no error, that is, the wrong patient's data presented as the right one. ``n/a'' means the scheme has no key versioning and so no retirement to test. All results from \code{paper/evaluation/record\_swap.py}.}
 \label{tab:swap}
-\begin{tabular}{@{}lcccc@{}}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}p{4.9cm}cccc@{}}
 \toprule
 Scheme & Patient swap & Tenant move & Field move & Stale replay \\
 \midrule
-AES-256-CBC + HMAC, shared key & \SwapCbcPatient & \SwapCbcTenant & \SwapCbcField & \SwapCbcReplay \\
+AES-256-CBC + HMAC, one shared key & \SwapCbcPatient & \SwapCbcTenant & \SwapCbcField & \SwapCbcReplay \\
 AES-256-GCM, key per tenant & \SwapGcmPatient & \SwapGcmTenant & \SwapGcmField & \SwapGcmReplay \\
 CPDPM & \SwapCpdpmPatient & \SwapCpdpmTenant & \SwapCpdpmField & \SwapCpdpmReplay \\
 \bottomrule
