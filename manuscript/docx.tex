@@ -1,0 +1,38 @@
+% Pandoc-facing wrapper for the Word export. Same sections, plain article front matter.
+% Build: make docx
+\documentclass{article}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{rotating}
+\usepackage{array}
+\usepackage{amsmath,amssymb}
+\input{numbers}
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\ctx}{\mathit{ctx}}
+\newcommand{\canon}{\mathsf{canon}}
+\newcommand{\hkdf}{\mathsf{HKDF}}
+\newcommand{\aead}{\mathsf{AEAD}}
+\newcommand{\Kctx}{K_{\ctx}}
+\newcommand{\MK}{\mathit{MK}}
+\newcommand{\concat}{\,\|\,}
+\newcommand{\todo}[1]{\textbf{[#1]}}
+\newcolumntype{R}[1]{p{#1}}
+\title{Context-bound authenticated encryption for clinical records}
+\author{Ayomide Atunrase \\ Independent Researcher \\ atunraseayomide@gmail.com}
+\date{Draft, \today}
+\begin{document}
+\maketitle
+\section*{Abstract}
+\input{build-docx/sections/00-abstract}
+\paragraph{Keywords} authenticated encryption; context binding; key commitment; electronic health records; FHIR; key rotation; insider threat
+\input{build-docx/sections/01-introduction}
+\input{build-docx/sections/02-background}
+\input{build-docx/sections/03-pretransform}
+\input{build-docx/sections/04-design}
+\input{build-docx/sections/05-evaluation}
+\input{build-docx/sections/06-discussion}
+\input{build-docx/sections/07-conclusion}
+\section*{Availability}
+The implementation, its test suite, the known-answer vectors, and every experiment and figure in this paper are available at \url{https://github.com/Ayo-Cyber/cpdpm-secure}. A single command reproduces all results from a clean container.
+\section*{References}
+\end{document}

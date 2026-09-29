@@ -2,7 +2,7 @@ PY ?= python3
 VENV := .venv
 BIN := $(VENV)/bin
 
-.PHONY: setup test coverage lint typecheck analysis evaluation evaluation-fast figures diagrams paper all clean
+.PHONY: setup test coverage lint typecheck analysis evaluation evaluation-fast figures diagrams paper docx all clean
 
 ## One-command setup: fresh virtualenv with the package and dev tools.
 setup:
@@ -57,6 +57,17 @@ paper:
 	$(BIN)/python -m paper.manuscript_numbers
 	cd manuscript && tectonic -X compile --keep-logs main.tex
 	@echo "manuscript/main.pdf"
+
+## Word export of the manuscript via pandoc (brew install pandoc). Figures as PNG,
+## numeric citations in Elsevier style; the LaTeX PDF remains the submission artefact.
+docx:
+	$(BIN)/python -m paper.manuscript_numbers
+	$(BIN)/python -m paper.docx_prep
+	cd manuscript && pandoc docx.tex --from latex --to docx --citeproc \
+	  --bibliography refs.bib --csl elsevier-vancouver.csl \
+	  --resource-path=.:figures-png --default-image-extension=png \
+	  --metadata link-citations=true -o main.docx
+	@echo "manuscript/main.docx"
 
 ## Everything the paper needs, from a clean checkout: gate, analysis, evaluation, figures.
 all: test analysis evaluation figures

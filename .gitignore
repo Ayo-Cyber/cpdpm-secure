@@ -195,3 +195,5 @@ manuscript/*.log
 manuscript/*.aux
 manuscript/*.bbl
 manuscript/*.blg
+manuscript/*.docx
+manuscript/build-docx/
