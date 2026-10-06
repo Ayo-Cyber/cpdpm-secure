@@ -51,7 +51,7 @@ From a master key and a context, HKDF-SHA256 derives two values:
 \end{align*}
 each 32 bytes, with an empty salt, which is sound for uniformly random input keying material. The suite identifier in the first label keeps the AES-GCM and XChaCha20-Poly1305 keys for one context independent.
 
-Deriving a key per context, rather than relying on associated data alone, buys two things. A leaked derived key exposes one patient's one field, not a tenant. And the number of encryptions under any single key is the write count of one field of one patient, so 96-bit random nonces under AES-GCM remain far from their collision bound.
+Deriving a key per context, rather than relying on associated data alone, buys two things, and neither is binding: associated data already rejects a ciphertext presented in the wrong place, as Section~\ref{sec:swap} confirms. A leaked derived key exposes one patient's one field, not a tenant; Section~\ref{sec:exposure} measures this. And the number of encryptions under any single key is the write count of one field of one patient, so 96-bit random nonces under AES-GCM remain far from their collision bound.
 
 \subsection{Encryption and wire format}
 \label{sec:wire}
@@ -135,7 +135,7 @@ Let the AEAD be secure in the standard sense (indistinguishability under chosen-
   \item \emph{Key commitment.} A ciphertext accepted under two candidate master keys would have to decrypt to both keys' 32-byte commitments in its first 32 bytes, which for computationally independent values happens with negligible probability.
 \end{enumerate}
 
-The reduction is routine. Its value is in stating precisely what the encoding, the derivation and the associated data each contribute, and then showing empirically, in Section~\ref{sec:evaluation}, that the property it establishes is the one the baselines lack.
+The reduction is routine. Its value is in stating precisely what the encoding, the derivation and the associated data each contribute, and then showing empirically, in Section~\ref{sec:evaluation}, which of those properties each baseline lacks.
 
 \subsection{Implementation}
 \label{sec:impl}

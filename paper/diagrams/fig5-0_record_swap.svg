@@ -1,11 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">
-  <rect width="1200" height="720" fill="#ffffff"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="770" viewBox="0 0 1200 770" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">
+  <rect width="1200" height="770" fill="#ffffff"/>
   <text x="40" y="54" font-size="27" font-weight="700" fill="#0b0b0b">The record-swap attack</text>
   <text x="40" y="82" font-size="16" fill="#52514e">An insider with database write access moves Bob's ciphertext into Alice's row. The application, reading Alice's row, decrypts for Alice.</text>
 
   <!-- ===== storage panel ===== -->
   <text x="40" y="124" font-size="13" font-weight="700" fill="#52514e" letter-spacing="1.5">1 · STORAGE, ADVERSARY CAN WRITE</text>
-  <rect x="40" y="136" width="400" height="330" rx="8" fill="#fafaf8" stroke="#d9d9d5" stroke-width="1.5"/>
+  <rect x="40" y="136" width="400" height="356" rx="8" fill="#fafaf8" stroke="#d9d9d5" stroke-width="1.5"/>
 
   <!-- table header -->
   <text x="64" y="172" font-size="12.5" font-weight="700" fill="#52514e">ROW</text>
@@ -44,7 +44,7 @@
 
   <!-- ===== application panel ===== -->
   <text x="480" y="124" font-size="13" font-weight="700" fill="#52514e" letter-spacing="1.5">2 · APPLICATION</text>
-  <rect x="480" y="136" width="280" height="330" rx="8" fill="#fafaf8" stroke="#d9d9d5" stroke-width="1.5"/>
+  <rect x="480" y="136" width="280" height="356" rx="8" fill="#fafaf8" stroke="#d9d9d5" stroke-width="1.5"/>
   <text x="504" y="176" font-size="15" fill="#0b0b0b">Reads Alice's row.</text>
   <text x="504" y="210" font-size="15" fill="#0b0b0b">Builds the context from what it</text>
   <text x="504" y="230" font-size="15" fill="#0b0b0b">knows to be true:</text>
@@ -62,61 +62,76 @@
   <polygon points="470,339 470,351 480,345" fill="#52514e"/>
 
   <!-- arrows app -> outcomes -->
-  <polyline points="760,300 790,300 790,186 812,186" fill="none" stroke="#52514e" stroke-width="2"/>
-  <polygon points="810,180 810,192 820,186" fill="#52514e"/>
-  <polyline points="760,300 790,300 790,300 812,300" fill="none" stroke="#52514e" stroke-width="2"/>
-  <polygon points="810,294 810,306 820,300" fill="#52514e"/>
-  <polyline points="760,300 790,300 790,414 812,414" fill="none" stroke="#52514e" stroke-width="2"/>
-  <polygon points="810,408 810,420 820,414" fill="#52514e"/>
+  <polyline points="760,314 790,314 790,178 812,178" fill="none" stroke="#52514e" stroke-width="2"/>
+  <polygon points="810,172 810,184 820,178" fill="#52514e"/>
+  <polyline points="760,314 790,314 790,268 812,268" fill="none" stroke="#52514e" stroke-width="2"/>
+  <polygon points="810,262 810,274 820,268" fill="#52514e"/>
+  <polyline points="760,314 790,314 790,358 812,358" fill="none" stroke="#52514e" stroke-width="2"/>
+  <polygon points="810,352 810,364 820,358" fill="#52514e"/>
+  <polyline points="760,314 790,314 790,448 812,448" fill="none" stroke="#52514e" stroke-width="2"/>
+  <polygon points="810,442 810,454 820,448" fill="#52514e"/>
 
   <!-- ===== outcomes ===== -->
   <text x="820" y="124" font-size="13" font-weight="700" fill="#52514e" letter-spacing="1.5">3 · OUTCOME BY SCHEME</text>
 
-  <rect x="820" y="136" width="340" height="100" rx="8" fill="#fbe3e3" stroke="#d03b3b" stroke-width="1.5"/>
-  <text x="840" y="162" font-size="15" font-weight="700" fill="#0b0b0b">AES-256-CBC + HMAC, one shared key</text>
-  <text x="840" y="186" font-size="14" font-weight="700" fill="#d03b3b">✕ ACCEPTED: Bob's note shown as Alice's</text>
-  <text x="840" y="210" font-size="13" fill="#52514e">The MAC proves the bytes were made under the key,</text>
-  <text x="840" y="228" font-size="13" fill="#52514e">not that they belong to this row. Typical shared-key design.</text>
+  <rect x="820" y="136" width="340" height="84" rx="8" fill="#fbe3e3" stroke="#d03b3b" stroke-width="1.5"/>
+  <text x="840" y="158" font-size="14.5" font-weight="700" fill="#0b0b0b">AES-256-CBC + HMAC, one shared key</text>
+  <text x="840" y="178" font-size="13.5" font-weight="700" fill="#d03b3b">ACCEPTED: Bob's note shown as Alice's</text>
+  <text x="840" y="196" font-size="12" fill="#52514e">The MAC proves the bytes were made under the key, not</text>
+  <text x="840" y="212" font-size="12" fill="#52514e">that they belong to this row. Typical legacy design.</text>
 
-  <rect x="820" y="250" width="340" height="100" rx="8" fill="#fbe3e3" stroke="#d03b3b" stroke-width="1.5"/>
-  <text x="840" y="276" font-size="15" font-weight="700" fill="#0b0b0b">AES-256-GCM, key per tenant, no AAD</text>
-  <text x="840" y="300" font-size="14" font-weight="700" fill="#d03b3b">✕ ACCEPTED: same tenant key, tag verifies</text>
-  <text x="840" y="324" font-size="13" fill="#52514e">Confidentiality is perfect; binding is absent. Only a</text>
-  <text x="840" y="342" font-size="13" fill="#52514e">cross-tenant move fails, because the key differs.</text>
+  <rect x="820" y="226" width="340" height="84" rx="8" fill="#fbe3e3" stroke="#d03b3b" stroke-width="1.5"/>
+  <text x="840" y="248" font-size="14.5" font-weight="700" fill="#0b0b0b">AES-256-GCM, key per tenant, no AAD</text>
+  <text x="840" y="268" font-size="13.5" font-weight="700" fill="#d03b3b">ACCEPTED: same tenant key, tag verifies</text>
+  <text x="840" y="286" font-size="12" fill="#52514e">Confidentiality is perfect; binding is absent. Only a</text>
+  <text x="840" y="302" font-size="12" fill="#52514e">cross-tenant move fails, because the key differs.</text>
 
-  <rect x="820" y="364" width="340" height="102" rx="8" fill="#e3f4e3" stroke="#0ca30c" stroke-width="1.5"/>
-  <text x="840" y="390" font-size="15" font-weight="700" fill="#0b0b0b">CPDPM (this work)</text>
-  <text x="840" y="414" font-size="14" font-weight="700" fill="#0b7a0b">✓ REJECTED: DecryptionError</text>
-  <text x="840" y="438" font-size="13" fill="#52514e">K_ctx and the AAD are derived from Alice's context.</text>
-  <text x="840" y="456" font-size="13" fill="#52514e">ct_B was made under Bob's. Both checks fail.</text>
+  <rect x="820" y="316" width="340" height="84" rx="8" fill="#e3f4e3" stroke="#0ca30c" stroke-width="1.5"/>
+  <text x="840" y="338" font-size="14.5" font-weight="700" fill="#0b0b0b">AES-256-GCM, per tenant, context as AAD</text>
+  <text x="840" y="358" font-size="13.5" font-weight="700" fill="#0b7a0b">REJECTED: AAD mismatch, tag fails</text>
+  <text x="840" y="376" font-size="12" fill="#52514e">Associated data alone stops the swap. What it lacks is a</text>
+  <text x="840" y="392" font-size="12" fill="#52514e">per-context key and versioning (see the exposure table).</text>
+
+  <rect x="820" y="406" width="340" height="84" rx="8" fill="#e3f4e3" stroke="#0ca30c" stroke-width="1.5"/>
+  <text x="840" y="428" font-size="14.5" font-weight="700" fill="#0b0b0b">CPDPM (this work)</text>
+  <text x="840" y="448" font-size="13.5" font-weight="700" fill="#0b7a0b">REJECTED: DecryptionError</text>
+  <text x="840" y="466" font-size="12" fill="#52514e">K_ctx and the AAD are derived from Alice's context.</text>
+  <text x="840" y="482" font-size="12" fill="#52514e">ct_B was made under Bob's. Both checks fail.</text>
 
   <!-- ===== results strip ===== -->
-  <line x1="40" y1="500" x2="1160" y2="500" stroke="#d9d9d5" stroke-width="1"/>
-  <text x="40" y="530" font-size="13" font-weight="700" fill="#52514e" letter-spacing="1.5">MEASURED, paper/evaluation/record_swap.py</text>
+  <line x1="40" y1="522" x2="1160" y2="522" stroke="#d9d9d5" stroke-width="1"/>
+  <text x="40" y="552" font-size="13" font-weight="700" fill="#52514e" letter-spacing="1.5">MEASURED, paper/evaluation/record_swap.py</text>
 
-  <text x="40" y="566" font-size="13" font-weight="700" fill="#52514e">SCHEME</text>
-  <text x="440" y="566" font-size="13" font-weight="700" fill="#52514e" text-anchor="middle">PATIENT SWAP</text>
-  <text x="620" y="566" font-size="13" font-weight="700" fill="#52514e" text-anchor="middle">TENANT MOVE</text>
-  <text x="800" y="566" font-size="13" font-weight="700" fill="#52514e" text-anchor="middle">FIELD MOVE</text>
-  <text x="1010" y="566" font-size="13" font-weight="700" fill="#52514e" text-anchor="middle">STALE REPLAY AFTER KEY RETIREMENT</text>
-  <line x1="40" y1="576" x2="1160" y2="576" stroke="#d9d9d5" stroke-width="1"/>
+  <text x="40" y="588" font-size="13" font-weight="700" fill="#52514e">SCHEME</text>
+  <text x="440" y="588" font-size="13" font-weight="700" fill="#52514e" text-anchor="middle">PATIENT SWAP</text>
+  <text x="620" y="588" font-size="13" font-weight="700" fill="#52514e" text-anchor="middle">TENANT MOVE</text>
+  <text x="800" y="588" font-size="13" font-weight="700" fill="#52514e" text-anchor="middle">FIELD MOVE</text>
+  <text x="1010" y="588" font-size="13" font-weight="700" fill="#52514e" text-anchor="middle">STALE REPLAY AFTER KEY RETIREMENT</text>
+  <line x1="40" y1="598" x2="1160" y2="598" stroke="#d9d9d5" stroke-width="1"/>
 
-  <text x="40" y="604" font-size="14.5" fill="#0b0b0b">AES-256-CBC + HMAC, one shared key</text>
-  <text x="440" y="604" font-size="14" font-weight="700" fill="#d03b3b" text-anchor="middle">accepted</text>
-  <text x="620" y="604" font-size="14" font-weight="700" fill="#d03b3b" text-anchor="middle">accepted</text>
-  <text x="800" y="604" font-size="14" font-weight="700" fill="#d03b3b" text-anchor="middle">accepted</text>
-  <text x="1010" y="604" font-size="13" fill="#52514e" text-anchor="middle">n/a, no key versioning</text>
+  <text x="40" y="626" font-size="14.5" fill="#0b0b0b">AES-256-CBC + HMAC, one shared key</text>
+  <text x="440" y="626" font-size="14" font-weight="700" fill="#d03b3b" text-anchor="middle">accepted</text>
+  <text x="620" y="626" font-size="14" font-weight="700" fill="#d03b3b" text-anchor="middle">accepted</text>
+  <text x="800" y="626" font-size="14" font-weight="700" fill="#d03b3b" text-anchor="middle">accepted</text>
+  <text x="1010" y="626" font-size="13" fill="#52514e" text-anchor="middle">n/a, no key versioning</text>
 
-  <text x="40" y="640" font-size="14.5" fill="#0b0b0b">AES-256-GCM, key per tenant, no AAD</text>
-  <text x="440" y="640" font-size="14" font-weight="700" fill="#d03b3b" text-anchor="middle">accepted</text>
-  <text x="620" y="640" font-size="14" font-weight="700" fill="#0b7a0b" text-anchor="middle">rejected</text>
-  <text x="800" y="640" font-size="14" font-weight="700" fill="#d03b3b" text-anchor="middle">accepted</text>
-  <text x="1010" y="640" font-size="13" fill="#52514e" text-anchor="middle">n/a, no key versioning</text>
+  <text x="40" y="662" font-size="14.5" fill="#0b0b0b">AES-256-GCM, key per tenant, no AAD</text>
+  <text x="440" y="662" font-size="14" font-weight="700" fill="#d03b3b" text-anchor="middle">accepted</text>
+  <text x="620" y="662" font-size="14" font-weight="700" fill="#0b7a0b" text-anchor="middle">rejected</text>
+  <text x="800" y="662" font-size="14" font-weight="700" fill="#d03b3b" text-anchor="middle">accepted</text>
+  <text x="1010" y="662" font-size="13" fill="#52514e" text-anchor="middle">n/a, no key versioning</text>
 
-  <text x="40" y="676" font-size="14.5" fill="#0b0b0b">CPDPM (this work)</text>
-  <text x="440" y="676" font-size="14" font-weight="700" fill="#0b7a0b" text-anchor="middle">rejected</text>
-  <text x="620" y="676" font-size="14" font-weight="700" fill="#0b7a0b" text-anchor="middle">rejected</text>
-  <text x="800" y="676" font-size="14" font-weight="700" fill="#0b7a0b" text-anchor="middle">rejected</text>
-  <text x="1010" y="676" font-size="14" font-weight="700" fill="#0b7a0b" text-anchor="middle">rejected</text>
-  <line x1="40" y1="694" x2="1160" y2="694" stroke="#d9d9d5" stroke-width="1"/>
+  <text x="40" y="698" font-size="14.5" fill="#0b0b0b">AES-256-GCM, key per tenant, context as AAD</text>
+  <text x="440" y="698" font-size="14" font-weight="700" fill="#0b7a0b" text-anchor="middle">rejected</text>
+  <text x="620" y="698" font-size="14" font-weight="700" fill="#0b7a0b" text-anchor="middle">rejected</text>
+  <text x="800" y="698" font-size="14" font-weight="700" fill="#0b7a0b" text-anchor="middle">rejected</text>
+  <text x="1010" y="698" font-size="13" fill="#52514e" text-anchor="middle">n/a, no key versioning</text>
+
+  <text x="40" y="734" font-size="14.5" fill="#0b0b0b">CPDPM (this work)</text>
+  <text x="440" y="734" font-size="14" font-weight="700" fill="#0b7a0b" text-anchor="middle">rejected</text>
+  <text x="620" y="734" font-size="14" font-weight="700" fill="#0b7a0b" text-anchor="middle">rejected</text>
+  <text x="800" y="734" font-size="14" font-weight="700" fill="#0b7a0b" text-anchor="middle">rejected</text>
+  <text x="1010" y="734" font-size="14" font-weight="700" fill="#0b7a0b" text-anchor="middle">rejected</text>
+
+  <line x1="40" y1="752" x2="1160" y2="752" stroke="#d9d9d5" stroke-width="1"/>
 </svg>

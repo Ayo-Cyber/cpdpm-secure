@@ -32,11 +32,13 @@ analysis:
 ## Chapter 5: attack matrix and pyperf benchmarks (needs `pip install tink`).
 evaluation:
 	$(BIN)/python -m paper.evaluation.record_swap
+	$(BIN)/python -m paper.evaluation.containment
 	$(BIN)/python -m paper.evaluation.benchmark -o paper/evaluation/results/bench_pyperf.json --quiet
 	$(BIN)/python -m paper.evaluation.summarize
 
 evaluation-fast:
 	$(BIN)/python -m paper.evaluation.record_swap
+	$(BIN)/python -m paper.evaluation.containment
 	$(BIN)/python -m paper.evaluation.benchmark --fast -o paper/evaluation/results/bench_pyperf.json --quiet
 	$(BIN)/python -m paper.evaluation.summarize
 

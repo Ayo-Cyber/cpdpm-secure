@@ -26,6 +26,7 @@ def main() -> None:
     pre = json.loads((ROOT / "paper/analysis/results/pre_transform.json").read_text())
     fair = json.loads((ROOT / "paper/analysis/results/fair_benchmark.json").read_text())
     swap = json.loads((ROOT / "paper/evaluation/results/record_swap.json").read_text())
+    contain = json.loads((ROOT / "paper/evaluation/results/containment.json").read_text())
     overhead = json.loads((ROOT / "paper/construction/results/overhead.json").read_text())
     x86_path = ROOT / "paper/evaluation/results/benchmark_x86_64.json"
     x86 = json.loads(x86_path.read_text()) if x86_path.exists() else None
@@ -83,6 +84,7 @@ def main() -> None:
     schemes = {
         "Cbc": "AES-256-CBC + HMAC, one shared key",
         "Gcm": "AES-256-GCM, key per tenant, no AAD",
+        "Aad": "AES-256-GCM, key per tenant, context as AAD",
         "Cpdpm": "CPDPM (this work)",
     }
     for key, name in schemes.items():
@@ -94,6 +96,59 @@ def main() -> None:
         ):
             lines.append(_macro(f"Swap{key}{short}", cell(name, attack)))
     lines.append(_macro("SwapFhir", swap["fhir_layer"]["patient_swap"]["outcome"]))
+    # Leaked-key exposure: cells, patients and tenants opened by the one key the
+    # application used for Alice's note, out of a corpus of tenants x patients x fields.
+    exposure = swap["leaked_key_exposure"]
+    any_e = next(iter(exposure.values()))
+    lines += [
+        _macro("CorpusCells", f"{any_e['corpus_cells']}"),
+        _macro("CorpusTenants", f"{any_e['corpus_tenants']}"),
+        _macro("CorpusPatients", f"{any_e['corpus_patients_per_tenant']}"),
+        _macro("CorpusFields", f"{len(any_e['corpus_fields'])}"),
+    ]
+    for key, name in schemes.items():
+        e = exposure[name]
+        lines += [
+            _macro(f"Leak{key}Cells", f"{e['cells_opened']}"),
+            _macro(f"Leak{key}Patients", f"{e['patients_opened']}"),
+            _macro(f"Leak{key}Tenants", f"{e['tenants_opened']}"),
+        ]
+
+    # Containment: secrets at rest, cells re-encrypted and time to contain one
+    # working-key leak, plus the same counts multiplied out to a stated deployment.
+    def thousands(n: int) -> str:
+        return f"{n:,}".replace(",", "{,}")
+
+    def human_time(sec: float) -> str:
+        if sec >= 60:
+            return f"{sec / 60:.1f}\\,min"
+        if sec >= 1:
+            return f"{sec:.0f}\\,s"
+        if sec >= 1e-3:
+            return f"{sec * 1e3:.0f}\\,ms"
+        return f"{sec * 1e6:.0f}\\,$\\mu$s"
+
+    sc = contain["scale"]
+    any_c = next(iter(contain["per_scheme"].values()))
+    lines += [
+        _macro("ContainRepeats", f"{any_c['repeats']}"),
+        _macro("ScaleTenants", f"{sc['tenants']}"),
+        _macro("ScalePatients", thousands(sc["patients_per_tenant"])),
+        _macro("ScaleFields", f"{sc['fields_per_patient']}"),
+        _macro("ScaleCellsPerTenant", thousands(sc["cells_per_tenant"])),
+        _macro("ScaleCellsTotal", thousands(sc["cells_total"])),
+    ]
+    for key, name in schemes.items():
+        c = contain["per_scheme"][name]
+        s = sc["per_scheme"][name]
+        lines += [
+            _macro(f"Contain{key}Secrets", c["secrets_at_rest"]),
+            _macro(f"Contain{key}Cells", f"{c['cells_reencrypted']}"),
+            _macro(f"Contain{key}Ms", f"{c['median_ms']:.2f}"),
+            _macro(f"Contain{key}PerCellUs", f"{c['per_cell_us']:.0f}"),
+            _macro(f"ScaleContain{key}Cells", thousands(s["cells_reencrypted"])),
+            _macro(f"ScaleContain{key}Time", human_time(s["seconds"])),
+        ]
 
     if x86:
         xrows = {(r["scheme"], r["op"], r["n"]): r for r in x86["rows"]}

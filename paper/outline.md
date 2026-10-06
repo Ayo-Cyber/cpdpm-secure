@@ -41,15 +41,18 @@ Sections follow `docs/design.md`: context and canonical encoding (§3, injectivi
 
 ## Chapter 5: Evaluation
 
-**Experiment 1, record swap** (`record_swap.py` → `record_swap.json`, fig 5-0, table 5-1). Three schemes, four manipulations.
+**Experiment 1, record swap** (`record_swap.py` → `record_swap.json`, fig 5-0, table 5-1). Four schemes as a ladder, four manipulations, plus a leaked-key exposure count.
 
-| Scheme | Patient swap | Tenant move | Field move | Stale replay |
-|---|---|---|---|---|
-| AES-256-CBC + HMAC, one shared key | accepted | accepted | accepted | n/a (no key versioning) |
-| AES-256-GCM, key per tenant, no AAD | accepted | rejected | accepted | n/a (no key versioning) |
-| CPDPM | rejected | rejected | rejected | rejected |
+| Scheme | Patient swap | Tenant move | Field move | Stale replay | One leaked key opens |
+|---|---|---|---|---|---|
+| AES-256-CBC + HMAC, one shared key | accepted | accepted | accepted | n/a (no key versioning) | 200/200 cells |
+| AES-256-GCM, key per tenant, no AAD | accepted | rejected | accepted | n/a (no key versioning) | 100/200 (one tenant) |
+| AES-256-GCM, key per tenant, context as AAD | rejected | rejected | rejected | n/a (no key versioning) | 100/200 (one tenant) |
+| CPDPM | rejected | rejected | rejected | rejected | 1/200 |
 
-Honest note for the text: per-tenant keys already stop the tenant move; CPDPM's contribution is the other three columns. Also report the FHIR-layer swap and the manifest's structural detections.
+**Experiment 3, containment** (`containment.py` → `containment.json`, table 5-3). Same corpus, same leaked key; replace the leaked material and re-encrypt every cell it could open, verify it then opens nothing and everything still decrypts. Cells re-encrypted: 200 / 100 / 100 / 1. Secrets at rest: 2 shared / 1 per tenant / 1 per tenant / 1 per live master version. Extrapolated to 5 tenants × 100k patients × 10 fields as a cryptographic floor (I/O dominates in practice and scales with the same count). Argument paragraph is a `\todo{}` for Ayomide.
+
+Honest note for the text: associated data alone ties CPDPM on every substitution column (reviewer Phil, Oct 2026: comparing only against no-AAD baselines was a sleight of hand). CPDPM's measured delta over the AAD baseline is the exposure column and the retirement column; its binding contribution is the specified context and injective encoding. Also report the FHIR-layer swap and the manifest's structural detections.
 
 **Experiment 2, cost** (`benchmark.py` → `summarize.py` → `benchmark.json`, fig 5-1, 5-2). Median latency per op, payloads of 1/10/100/1000 observations (726 B to 670 KB), schemes aes-gcm, fernet, tink, cpdpm-gcm, cpdpm-xchacha, plus the field-level path at n=1.
 
