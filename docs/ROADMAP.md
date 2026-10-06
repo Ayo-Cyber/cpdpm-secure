@@ -10,7 +10,7 @@ Done, in merged and open pull requests on `github.com/Ayo-Cyber/cpdpm-secure`:
 
 - Foundations: threat model, design doc, venue shortlist, CI, coverage gate, release workflow.
 - Chapter 3 analysis of the pre-transform pattern: scripts, pinned results, fig 3-1 and 3-2.
-- Construction: `cpdpm/` core, FHIR layer with manifest, streaming; 120 tests, 98% coverage, fuzzing, known-answer vectors.
+- Construction: `cpdpm/` core, FHIR layer with manifest, streaming; fuzzing, known-answer vectors, 100% line coverage including the commitment-mismatch and FHIR rejection branches.
 - Evaluation: attack matrix, full pyperf run, figs 5-0 to 5-2, table 5-1; x86-64 benchmark workflow (run it after merge).
 - Explanatory diagrams for chapters 4 and 5, self red-team review, SECURITY and CHANGELOG.
 

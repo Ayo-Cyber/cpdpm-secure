@@ -4,6 +4,13 @@ See ``docs/design.md`` §3. The encoding is injective: two contexts encode to
 the same bytes only if they are equal. That property is what makes the
 derived-key and associated-data binding meaningful, and it is tested with a
 property-based test in ``tests/test_context.py``.
+
+Fields are NFC-normalised before encoding. The Unicode normalization stability
+policy guarantees that normalising a string of *assigned* characters gives the
+same result under every later Unicode version, so the one way two interpreters
+could canonicalise the same identifier differently is through a code point
+that is unassigned on one of them. Unassigned code points (category ``Cn``)
+are therefore rejected, along with control characters and surrogates.
 """
 
 from __future__ import annotations
@@ -52,8 +59,12 @@ class Context:
                 raise ContextError(f"{name} is not valid Unicode text") from exc
             if len(raw) > MAX_FIELD_BYTES:
                 raise ContextError(f"{name} exceeds {MAX_FIELD_BYTES} bytes")
-            if any(unicodedata.category(ch) in ("Cc", "Cs") for ch in normalised):
-                raise ContextError(f"{name} contains a control character")
+            for ch in normalised:
+                cat = unicodedata.category(ch)
+                if cat in ("Cc", "Cs"):
+                    raise ContextError(f"{name} contains a control character")
+                if cat == "Cn":
+                    raise ContextError(f"{name} contains an unassigned code point")
         for name in _REQUIRED:
             if getattr(self, name) == "":
                 raise ContextError(f"{name} is required")

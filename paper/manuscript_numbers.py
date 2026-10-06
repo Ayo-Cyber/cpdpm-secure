@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "manuscript" / "numbers.tex"
@@ -52,6 +53,31 @@ def main() -> None:
         rows[("cpdpm-gcm", "encrypt", 1)]["median_us"]
         - rows[("aes-gcm", "encrypt", 1)]["median_us"]
     )
+
+    names = {
+        "aes-gcm": "raw AES-GCM",
+        "cpdpm-gcm": "CPDPM AES-GCM",
+        "cpdpm-xchacha": "CPDPM XChaCha",
+        "cpdpm-fhir-fields": "CPDPM FHIR fields",
+        "fernet": "Fernet",
+        "tink": "Tink",
+    }
+
+    def cv_percent(rs: list[dict[str, Any]]) -> tuple[float, float, str]:
+        cvs = sorted((100 * r["stdev_us"] / r["median_us"], r) for r in rs)
+        worst = cvs[-1][1]
+        where = f"{names.get(worst['scheme'], worst['scheme'])} {worst['op']} at {worst['n']}"
+        return cvs[len(cvs) // 2][0], cvs[-1][0], where
+
+    med_cv, max_cv, where = cv_percent(bench["rows"])
+    lines += [
+        _macro("BenchValues", f"{bench['rows'][0]['values']}"),
+        _macro("BenchMedianCv", f"{med_cv:.0f}"),
+        _macro("BenchMaxCv", f"{max_cv:.0f}"),
+        _macro("BenchMaxCvWhere", where),
+    ]
+    if x86:
+        lines.append(_macro("XBenchMaxCv", f"{cv_percent(x86['rows'])[1]:.0f}"))
     lines += [
         _macro("CpdpmFixedUs", f"{fixed:.0f}"),
         _macro("FhirFieldsEncUs", f"{rows[('cpdpm-fhir-fields', 'encrypt', 1)]['median_us']:.0f}"),
