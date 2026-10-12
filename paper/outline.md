@@ -41,15 +41,18 @@ Sections follow `docs/design.md`: context and canonical encoding (§3, injectivi
 
 ## Chapter 5: Evaluation
 
-**Experiment 1, record swap** (`record_swap.py` → `record_swap.json`, fig 5-0, table 5-1). Three schemes, four manipulations.
+**Experiment 1, record swap** (`record_swap.py` → `record_swap.json`, fig 5-0, table 5-1). Four schemes as a ladder, four manipulations, plus a leaked-key exposure count.
 
-| Scheme | Patient swap | Tenant move | Field move | Stale replay |
-|---|---|---|---|---|
-| AES-256-CBC + HMAC, one shared key | accepted | accepted | accepted | accepted |
-| AES-256-GCM, key per tenant, no AAD | accepted | rejected | accepted | accepted |
-| CPDPM | rejected | rejected | rejected | rejected |
+| Scheme | Patient swap | Tenant move | Field move | Stale replay | One leaked key opens |
+|---|---|---|---|---|---|
+| AES-256-CBC + HMAC, one shared key | accepted | accepted | accepted | n/a (no key versioning) | 200/200 cells |
+| AES-256-GCM, key per tenant, no AAD | accepted | rejected | accepted | n/a (no key versioning) | 100/200 (one tenant) |
+| AES-256-GCM, key per tenant, context as AAD | rejected | rejected | rejected | n/a (no key versioning) | 100/200 (one tenant) |
+| CPDPM | rejected | rejected | rejected | rejected | 1/200 |
 
-Honest note for the text: per-tenant keys already stop the tenant move; CPDPM's contribution is the other three columns. Also report the FHIR-layer swap and the manifest's structural detections.
+**Experiment 3, containment** (`containment.py` → `containment.json`, table 5-3). Same corpus, same leaked key; replace the leaked material and re-encrypt every cell it could open, verify it then opens nothing and everything still decrypts. Cells re-encrypted: 200 / 100 / 100 / 1. Secrets at rest: 2 shared / 1 per tenant / 1 per tenant / 1 per live master version. Extrapolated to 5 tenants × 100k patients × 10 fields as a cryptographic floor (I/O dominates in practice and scales with the same count). Argument paragraph is a `\todo{}` for Ayomide.
+
+Honest note for the text: associated data alone ties CPDPM on every substitution column (reviewer Phil, Oct 2026: comparing only against no-AAD baselines was a sleight of hand). CPDPM's measured delta over the AAD baseline is the exposure column and the retirement column; its binding contribution is the specified context and injective encoding. Also report the FHIR-layer swap and the manifest's structural detections.
 
 **Experiment 2, cost** (`benchmark.py` → `summarize.py` → `benchmark.json`, fig 5-1, 5-2). Median latency per op, payloads of 1/10/100/1000 observations (726 B to 670 KB), schemes aes-gcm, fernet, tink, cpdpm-gcm, cpdpm-xchacha, plus the field-level path at n=1.
 
@@ -64,7 +67,9 @@ Full pyperf run (2 Sep 2026, macOS arm64, Python 3.14, 8 processes × 3 values, 
 
 Reading: cpdpm-gcm carries a fixed cost of about 12 µs per operation (two HKDF-SHA256 derivations, a 32-byte commitment, header and context encoding), then tracks raw AES-GCM. At one small record it is 5x the raw floor and still under 15 µs; Fernet, the most common Python "just encrypt it" choice, is slower than CPDPM from 10 observations up. The field-level path (three fields, one observation) costs 110 µs, about 37 µs per field: per-field HKDF is the price of per-field binding. Tink beats raw `cryptography` at small sizes because it caches the cipher object; the raw baseline constructs `AESGCM(key)` per call, which is how application code usually does it.
 
-**XChaCha caveat, must be stated.** cpdpm-xchacha is 110x the floor at 654 KB. A direct check shows PyNaCl's bundled libsodium encrypts 670 KB in 10.1 ms while `cryptography`'s ChaCha20-Poly1305 does it in 0.29 ms and AES-GCM in 0.07 ms on the same machine. The gap is the PyNaCl wheel's libsodium build on arm64 (no SIMD path), not the design. Report it as an implementation artifact, keep AES-GCM as the default suite, and re-measure on x86-64 in the final run.
+**x86-64 run (21 Sep 2026, GitHub Actions ubuntu runner, AMD EPYC 9V45, Python 3.12; `paper/evaluation/results/benchmark_x86_64.json`).** cpdpm-gcm 5.85x at one record, 1.55x at a thousand (fixed cost ~10 µs); Fernet 71x at a thousand; cpdpm-xchacha 7.3x at one record, 31x at a thousand.
+
+**XChaCha caveat, must be stated.** cpdpm-xchacha is 110x the floor at 654 KB on arm64 and 31x on x86-64. A direct check shows PyNaCl's bundled libsodium encrypts 670 KB in 10.1 ms while `cryptography`'s ChaCha20-Poly1305 does it in 0.29 ms and AES-GCM in 0.07 ms on the same machine. The gap is the PyNaCl wheel's libsodium build on arm64 (no SIMD path), not the design. Report it as an implementation artifact, keep AES-GCM as the default suite, and re-measure on x86-64 in the final run.
 
 ## Chapter 6: Discussion and limitations
 
@@ -89,6 +94,7 @@ Reading: cpdpm-gcm carries a fixed cost of about 12 µs per operation (two HKDF-
 | fig 4-1 | Key hierarchy and encryption path | `paper/diagrams/fig4-1_key_hierarchy.svg` |
 | fig 4-2 | Wire formats: one-shot blob and stream | `paper/diagrams/fig4-2_wire_format.svg` |
 | fig 4-3 | Field-level encryption with the manifest | `paper/diagrams/fig4-3_fhir_manifest.svg` |
+| fig 4-4 | System architecture and trust boundary | `paper/diagrams/fig4-4_architecture.svg` |
 | fig 5-0 | The record-swap attack, three schemes | `paper/diagrams/fig5-0_record_swap.svg` |
 | table 4-1 | Bytes of overhead per ciphertext, measured | `paper/construction/overhead_table.py` |
 

@@ -1,0 +1,161 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="820" viewBox="0 0 1200 820" font-family="Helvetica Neue, Helvetica, Arial, sans-serif">
+  <rect width="1200" height="820" fill="#ffffff"/>
+  <text x="40" y="54" font-size="27" font-weight="700" fill="#0b0b0b">System architecture</text>
+  <text x="40" y="82" font-size="16" fill="#52514e">Where CPDPM sits, what each module does, and which side of the trust boundary every component lives on.</text>
+
+  <!-- ===== trusted zone ===== -->
+  <rect x="40" y="118" width="1120" height="428" rx="10" fill="#f6f8f6" stroke="#8a8a86" stroke-width="1.5"/>
+  <text x="60" y="144" font-size="13" font-weight="700" fill="#52514e" letter-spacing="1.5">TRUSTED · APPLICATION HOST</text>
+  <text x="1140" y="144" font-size="12.5" fill="#52514e" text-anchor="end">holds master keys in memory while running</text>
+
+  <!-- application -->
+  <rect x="60" y="164" width="300" height="360" rx="8" fill="#ffffff" stroke="#8a8a86" stroke-width="1.5"/>
+  <text x="80" y="192" font-size="17" font-weight="700" fill="#0b0b0b">Clinical application</text>
+  <text x="80" y="214" font-size="13" fill="#52514e">EHR service, FHIR API, integration job</text>
+
+  <rect x="80" y="234" width="260" height="78" rx="6" fill="#fcf1d9" stroke="#eda100" stroke-width="1.5"/>
+  <text x="96" y="256" font-size="14" font-weight="700" fill="#0b0b0b">Builds the Context</text>
+  <text x="96" y="276" font-size="12.5" fill="#52514e">from authenticated facts only: the tenant of</text>
+  <text x="96" y="292" font-size="12.5" fill="#52514e">the logged-in user, the row it is reading,</text>
+  <text x="96" y="308" font-size="12.5" fill="#52514e">the resource type, the field path.</text>
+
+  <rect x="80" y="326" width="260" height="60" rx="6" fill="#ffffff" stroke="#8a8a86" stroke-width="1.2"/>
+  <text x="96" y="348" font-size="14" font-weight="700" fill="#0b0b0b">Decides access</text>
+  <text x="96" y="368" font-size="12.5" fill="#52514e">Authentication and authorisation stay here.</text>
+  <text x="96" y="382" font-size="12.5" fill="#52514e">CPDPM enforces them at the ciphertext.</text>
+
+  <rect x="80" y="400" width="260" height="104" rx="6" fill="#ffffff" stroke="#8a8a86" stroke-width="1.2"/>
+  <text x="96" y="422" font-size="14" font-weight="700" fill="#0b0b0b">Calls</text>
+  <text x="96" y="444" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#0b0b0b">encrypt(keyring, ctx, value)</text>
+  <text x="96" y="462" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#0b0b0b">decrypt(keyring, ctx, blob)</text>
+  <text x="96" y="480" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#0b0b0b">fhir.encrypt_resource(…)</text>
+  <text x="96" y="498" font-size="12.5" font-family="Menlo, Consolas, monospace" fill="#0b0b0b">stream.encrypt_stream(…)</text>
+
+  <!-- arrow app -> library -->
+  <line x1="360" y1="344" x2="392" y2="344" stroke="#52514e" stroke-width="2"/>
+  <polygon points="390,338 390,350 400,344" fill="#52514e"/>
+  <line x1="400" y1="364" x2="368" y2="364" stroke="#52514e" stroke-width="2"/>
+  <polygon points="370,358 370,370 360,364" fill="#52514e"/>
+  <text x="380" y="330" font-size="9.5" fill="#52514e" text-anchor="middle">in</text>
+  <text x="380" y="386" font-size="9.5" fill="#52514e" text-anchor="middle">out</text>
+
+  <!-- library -->
+  <rect x="400" y="164" width="500" height="360" rx="8" fill="#e6f0fb" stroke="#2a78d6" stroke-width="1.5"/>
+  <text x="420" y="192" font-size="17" font-weight="700" fill="#0b0b0b">cpdpm <tspan font-size="13" font-weight="400" fill="#52514e">Python library, protocol version 1</tspan></text>
+
+  <!-- entry layer -->
+  <rect x="420" y="210" width="220" height="64" rx="6" fill="#ffffff" stroke="#2a78d6" stroke-width="1.2"/>
+  <text x="432" y="230" font-size="13.5" font-weight="700" fill="#0b0b0b">fhir</text>
+  <text x="432" y="248" font-size="12" fill="#52514e">path policy · per-field contexts</text>
+  <text x="432" y="263" font-size="12" fill="#52514e">manifest · meta.tag record</text>
+
+  <rect x="660" y="210" width="220" height="64" rx="6" fill="#ffffff" stroke="#2a78d6" stroke-width="1.2"/>
+  <text x="672" y="230" font-size="13.5" font-weight="700" fill="#0b0b0b">stream</text>
+  <text x="672" y="248" font-size="12" fill="#52514e">STREAM chunks · counter nonce</text>
+  <text x="672" y="263" font-size="12" fill="#52514e">large payloads, bounded memory</text>
+
+  <line x1="530" y1="274" x2="530" y2="292" stroke="#52514e" stroke-width="1.5"/>
+  <line x1="770" y1="274" x2="770" y2="292" stroke="#52514e" stroke-width="1.5"/>
+  <polygon points="525,290 535,290 530,298" fill="#52514e"/>
+  <polygon points="765,290 775,290 770,298" fill="#52514e"/>
+
+  <!-- core -->
+  <rect x="420" y="298" width="460" height="66" rx="6" fill="#ffffff" stroke="#2a78d6" stroke-width="1.2"/>
+  <text x="432" y="320" font-size="13.5" font-weight="700" fill="#0b0b0b">core</text>
+  <text x="432" y="338" font-size="12" font-family="Menlo, Consolas, monospace" fill="#0b0b0b">blob = header ‖ AEAD(K_ctx, nonce, aad, commit ‖ value)</text>
+  <text x="432" y="354" font-size="12" font-family="Menlo, Consolas, monospace" fill="#0b0b0b">aad  = header ‖ canon(ctx)</text>
+  <text x="700" y="354" font-size="12" fill="#52514e">one DecryptionError for every failure</text>
+
+  <line x1="650" y1="364" x2="650" y2="386" stroke="#52514e" stroke-width="1.5"/>
+  <polygon points="645,384 655,384 650,392" fill="#52514e"/>
+
+  <!-- primitives layer -->
+  <rect x="420" y="392" width="140" height="70" rx="6" fill="#fcf1d9" stroke="#eda100" stroke-width="1.2"/>
+  <text x="432" y="414" font-size="13.5" font-weight="700" fill="#0b0b0b">context</text>
+  <text x="432" y="432" font-size="12" fill="#52514e">NFC · length-prefixed</text>
+  <text x="432" y="448" font-size="12" fill="#52514e">injective canon(ctx)</text>
+
+  <rect x="570" y="392" width="140" height="70" rx="6" fill="#ffffff" stroke="#2a78d6" stroke-width="1.2"/>
+  <text x="582" y="414" font-size="13.5" font-weight="700" fill="#0b0b0b">header</text>
+  <text x="582" y="432" font-size="12" fill="#52514e">CPDM · ver · suite</text>
+  <text x="582" y="448" font-size="12" fill="#52514e">key version · nonce</text>
+
+  <rect x="720" y="392" width="160" height="70" rx="6" fill="#ffffff" stroke="#2a78d6" stroke-width="1.2"/>
+  <text x="732" y="414" font-size="13.5" font-weight="700" fill="#0b0b0b">kdf</text>
+  <text x="732" y="432" font-size="12" fill="#52514e">HKDF → K_ctx, commit</text>
+  <text x="732" y="448" font-size="12" fill="#52514e">Argon2id for passwords</text>
+
+  <rect x="420" y="472" width="220" height="42" rx="6" fill="#e2f5ee" stroke="#1baf7a" stroke-width="1.2"/>
+  <text x="432" y="492" font-size="13.5" font-weight="700" fill="#0b0b0b">aead</text>
+  <text x="432" y="507" font-size="12" fill="#52514e">AES-256-GCM · XChaCha20-Poly1305</text>
+
+  <rect x="660" y="476" width="220" height="38" rx="6" fill="#ffffff" stroke="#2a78d6" stroke-width="1.2"/>
+  <text x="672" y="493" font-size="13.5" font-weight="700" fill="#0b0b0b">keys</text>
+  <text x="672" y="507" font-size="12" fill="#52514e">Keyring: MK[v] · rotate · retire · wrap</text>
+
+  <!-- KMS -->
+  <rect x="930" y="164" width="210" height="150" rx="8" fill="#f1f1ef" stroke="#8a8a86" stroke-width="1.5"/>
+  <text x="950" y="192" font-size="17" font-weight="700" fill="#0b0b0b">Key store</text>
+  <text x="950" y="214" font-size="13" fill="#52514e">Cloud KMS, HSM, or a local</text>
+  <text x="950" y="230" font-size="13" fill="#52514e">KEK file for development</text>
+  <rect x="950" y="246" width="170" height="52" rx="6" fill="#ffffff" stroke="#8a8a86" stroke-width="1.2"/>
+  <text x="962" y="266" font-size="12.5" font-weight="700" fill="#0b0b0b">Holds the KEK</text>
+  <text x="962" y="284" font-size="12" fill="#52514e">Sees wrapped MKs only</text>
+
+  <!-- KMS <-> keys -->
+  <polyline points="930,300 912,300 912,470 890,470" fill="none" stroke="#52514e" stroke-width="2"/>
+  <polygon points="892,464 892,476 880,470" fill="#52514e"/>
+  <text x="920" y="462" font-size="10.5" fill="#52514e" text-anchor="middle" transform="rotate(-90 920 462)">unwrap MK[v]</text>
+
+  <!-- trust rule box -->
+  <rect x="930" y="334" width="210" height="196" rx="8" fill="#ffffff" stroke="#8a8a86" stroke-width="1.2" stroke-dasharray="5 4"/>
+  <text x="950" y="360" font-size="13" font-weight="700" fill="#0b0b0b">Two rules the design relies on</text>
+  <text x="950" y="386" font-size="12" fill="#0b0b0b"><tspan font-weight="700">1</tspan>  The context comes from the</text>
+  <text x="950" y="402" font-size="12" fill="#0b0b0b">application, never from the stored</text>
+  <text x="950" y="418" font-size="12" fill="#0b0b0b">document. Reading it back from</text>
+  <text x="950" y="434" font-size="12" fill="#0b0b0b">the database undoes the binding.</text>
+  <text x="950" y="462" font-size="12" fill="#0b0b0b"><tspan font-weight="700">2</tspan>  Master keys never leave this</text>
+  <text x="950" y="478" font-size="12" fill="#0b0b0b">zone. Storage sees ciphertext</text>
+  <text x="950" y="494" font-size="12" fill="#0b0b0b">only, and cannot tell which key</text>
+  <text x="950" y="510" font-size="12" fill="#0b0b0b">produced which blob.</text>
+
+  <!-- ===== trust boundary ===== -->
+  <line x1="40" y1="580" x2="1160" y2="580" stroke="#d03b3b" stroke-width="2" stroke-dasharray="10 6"/>
+  <rect x="470" y="566" width="260" height="28" rx="14" fill="#ffffff" stroke="#d03b3b" stroke-width="1.5"/>
+  <text x="600" y="585" font-size="12.5" font-weight="700" fill="#d03b3b" text-anchor="middle" letter-spacing="1">TRUST BOUNDARY</text>
+
+  <!-- arrows across boundary -->
+  <line x1="450" y1="524" x2="450" y2="614" stroke="#52514e" stroke-width="2"/>
+  <polygon points="444,612 456,612 450,622" fill="#52514e"/>
+  <text x="438" y="556" font-size="11.5" fill="#52514e" text-anchor="end">write blob or cpdpm1: string</text>
+  <line x1="860" y1="622" x2="860" y2="532" stroke="#52514e" stroke-width="2"/>
+  <polygon points="854,534 866,534 860,524" fill="#52514e"/>
+  <text x="872" y="556" font-size="11.5" fill="#52514e">read blob, possibly tampered</text>
+
+  <!-- ===== untrusted zone ===== -->
+  <rect x="40" y="622" width="1120" height="150" rx="10" fill="#fbe3e3" stroke="#d03b3b" stroke-width="1.5"/>
+  <text x="60" y="648" font-size="13" font-weight="700" fill="#d03b3b" letter-spacing="1.5">UNTRUSTED · STORAGE</text>
+  <text x="1140" y="648" font-size="12.5" fill="#52514e" text-anchor="end">may read, write, move, duplicate or roll back any byte</text>
+
+  <rect x="60" y="668" width="250" height="84" rx="6" fill="#ffffff" stroke="#d03b3b" stroke-width="1.2"/>
+  <text x="76" y="692" font-size="14" font-weight="700" fill="#0b0b0b">Database</text>
+  <text x="76" y="712" font-size="12.5" fill="#52514e">row keys, encrypted columns,</text>
+  <text x="76" y="728" font-size="12.5" fill="#52514e">FHIR JSON with cpdpm1: fields</text>
+
+  <rect x="330" y="668" width="250" height="84" rx="6" fill="#ffffff" stroke="#d03b3b" stroke-width="1.2"/>
+  <text x="346" y="692" font-size="14" font-weight="700" fill="#0b0b0b">Object store</text>
+  <text x="346" y="712" font-size="12.5" fill="#52514e">imaging, documents, exports</text>
+  <text x="346" y="728" font-size="12.5" fill="#52514e">written by stream in chunks</text>
+
+  <rect x="600" y="668" width="250" height="84" rx="6" fill="#ffffff" stroke="#d03b3b" stroke-width="1.2"/>
+  <text x="616" y="692" font-size="14" font-weight="700" fill="#0b0b0b">Backups and replicas</text>
+  <text x="616" y="712" font-size="12.5" fill="#52514e">old copies stay readable only</text>
+  <text x="616" y="728" font-size="12.5" fill="#52514e">while their key version exists</text>
+
+  <rect x="870" y="668" width="270" height="84" rx="6" fill="#ffffff" stroke="#d03b3b" stroke-width="1.2"/>
+  <text x="886" y="692" font-size="14" font-weight="700" fill="#0b0b0b">Insider with write access</text>
+  <text x="886" y="712" font-size="12.5" fill="#52514e">can move a blob between rows, tenants</text>
+  <text x="886" y="728" font-size="12.5" fill="#52514e">or fields. Every such move is rejected.</text>
+
+  <text x="40" y="800" font-size="13.5" fill="#0b0b0b">Everything below the boundary is data the application reads back and verifies. Nothing below it can decrypt, and nothing below it can be made to decrypt in the wrong place.</text>
+</svg>

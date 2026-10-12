@@ -24,6 +24,7 @@ Starting points for the week 1–5 reading. These are real, well-known reference
 
 - Google Tink documentation: AEAD primitive and the associated-data guidance ("bind ciphertext to its context"). Cite the developers.google.com/tink pages with access date.
 - AWS Key Management Service Developer Guide: "Encryption context." The industry-practice reference for binding key use to context.
+- AWS Database Encryption SDK Developer Guide: "What is", "Concepts", "AWS KMS Hierarchical keyrings" (docs.aws.amazon.com/database-encryption-sdk, accessed October 2026). Closest industrial relative: client-side attribute encryption for DynamoDB, primary key in the encryption context, record signature catching field add/delete/swap, key commitment, versioned per-tenant branch keys. Cited in §2 and compared in §6.
 - Popa, R. A., Redfield, C. M. S., Zeldovich, N., Balakrishnan, H. "CryptDB: Protecting Confidentiality with Encrypted Query Processing." SOSP 2011. For the database-adversary model and what encrypted storage does and does not protect.
 - Grubbs, P., Ristenpart, T., Shmatikov, V. "Why Your Encrypted Database Is Not Secure." HotOS 2017. Snapshot versus persistent adversaries; the insider-with-write model.
 

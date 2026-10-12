@@ -1,0 +1,93 @@
+{
+  "_meta": {
+    "generated_utc": "2026-10-06T09:42:01+00:00",
+    "machine": "arm64",
+    "python": "3.14.6",
+    "script": "containment",
+    "system": "Darwin"
+  },
+  "corpus": {
+    "fields_per_patient": 2,
+    "patients_per_tenant": 50,
+    "tenants": 2
+  },
+  "per_scheme": {
+    "AES-256-CBC + HMAC, one shared key": {
+      "cells_reencrypted": 200,
+      "corpus_cells": 200,
+      "max_ms": 3.497958998195827,
+      "median_ms": 3.14304101630114,
+      "min_ms": 3.0539589934051037,
+      "opens_after": 0,
+      "per_cell_us": 15.7152050815057,
+      "readable_after": 200,
+      "repeats": 15,
+      "scheme": "AES-256-CBC + HMAC, one shared key",
+      "secrets_at_rest": "2, shared (cipher, MAC)"
+    },
+    "AES-256-GCM, key per tenant, context as AAD": {
+      "cells_reencrypted": 100,
+      "corpus_cells": 200,
+      "max_ms": 0.720292009646073,
+      "median_ms": 0.6752079934813082,
+      "min_ms": 0.6569999968633056,
+      "opens_after": 0,
+      "per_cell_us": 6.752079934813082,
+      "readable_after": 200,
+      "repeats": 15,
+      "scheme": "AES-256-GCM, key per tenant, context as AAD",
+      "secrets_at_rest": "1 per tenant"
+    },
+    "AES-256-GCM, key per tenant, no AAD": {
+      "cells_reencrypted": 100,
+      "corpus_cells": 200,
+      "max_ms": 0.7254579977598041,
+      "median_ms": 0.6644589884672314,
+      "min_ms": 0.6413749943021685,
+      "opens_after": 0,
+      "per_cell_us": 6.644589884672314,
+      "readable_after": 200,
+      "repeats": 15,
+      "scheme": "AES-256-GCM, key per tenant, no AAD",
+      "secrets_at_rest": "1 per tenant"
+    },
+    "CPDPM (this work)": {
+      "cells_reencrypted": 1,
+      "corpus_cells": 200,
+      "max_ms": 0.07795900455676019,
+      "median_ms": 0.05258398596197367,
+      "min_ms": 0.048707996029406786,
+      "opens_after": 0,
+      "per_cell_us": 52.58398596197367,
+      "readable_after": 200,
+      "repeats": 15,
+      "scheme": "CPDPM (this work)",
+      "secrets_at_rest": "1 per live master version"
+    }
+  },
+  "scale": {
+    "cells_per_tenant": 1000000,
+    "cells_total": 5000000,
+    "fields_per_patient": 10,
+    "patients_per_tenant": 100000,
+    "per_scheme": {
+      "AES-256-CBC + HMAC, one shared key": {
+        "cells_reencrypted": 5000000,
+        "seconds": 78.57602540752849
+      },
+      "AES-256-GCM, key per tenant, context as AAD": {
+        "cells_reencrypted": 1000000,
+        "seconds": 6.752079934813082
+      },
+      "AES-256-GCM, key per tenant, no AAD": {
+        "cells_reencrypted": 1000000,
+        "seconds": 6.644589884672314
+      },
+      "CPDPM (this work)": {
+        "cells_reencrypted": 1,
+        "seconds": 5.258398596197367e-05
+      }
+    },
+    "tenants": 5
+  }
+}

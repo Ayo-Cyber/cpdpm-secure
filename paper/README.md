@@ -7,8 +7,12 @@ Reproducible experiments and figures for the thesis and paper. Every number that
 | `analysis/` | 3, the pre-transform pattern | `pre_transform.py`, `fair_benchmark.py`, `make_figures.py` |
 | `construction/` | 4, the design | `gen_kat.py` writes the known-answer vectors in `tests/vectors/`; `overhead_table.py` measures table 4-1 |
 | `evaluation/` | 5, evaluation | `records.py` (FHIR-shaped payloads from the stroke dataset), `record_swap.py` (attack matrix), `benchmark.py` (pyperf), `summarize.py`, `make_figures.py` |
-| `diagrams/` | 4, 5 | Hand-authored SVG sources for the explanatory figures (key hierarchy, wire formats, manifest, baseline comparison, record-swap sequence). `render.py` makes PDFs with svglib; the committed PNG/PDF pairs were rendered in Chromium for exact fonts. |
+| `diagrams/` | 4, 5 | Hand-authored SVG sources for the explanatory figures (key hierarchy, wire formats, manifest, baseline comparison, record-swap sequence, system architecture). `render.py` makes PDFs with svglib; the committed PNG/PDF pairs were rendered in Chromium for exact fonts. |
 | `figures/` | all | Generated output only. Charts from scripts, diagrams from `diagrams/*.svg`. Never edit by hand. |
+
+## Manuscript
+
+`manuscript/` holds the LaTeX source (Elsevier `elsarticle`, preprint mode). `make paper` regenerates `manuscript/numbers.tex` from the pinned result files and compiles `manuscript/main.pdf` with Tectonic. No measurement appears as a literal in the text; every number is a macro.
 
 ## Running
 

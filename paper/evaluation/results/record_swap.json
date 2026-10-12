@@ -1,6 +1,6 @@
 {
   "_meta": {
-    "generated_utc": "2026-09-02T13:13:56+00:00",
+    "generated_utc": "2026-10-06T09:42:01+00:00",
     "machine": "arm64",
     "python": "3.14.6",
     "script": "record_swap",
@@ -24,8 +24,8 @@
       },
       "scheme": "AES-256-CBC + HMAC, one shared key",
       "stale_replay_after_retirement": {
-        "outcome": "accepted",
-        "returned": "2026-01-15T09:30:00Z"
+        "note": "no key versioning, so no retirement to test; the old ciphertext stays valid",
+        "outcome": "n/a"
       },
       "tenant_move": {
         "outcome": "accepted",
@@ -49,8 +49,33 @@
       },
       "scheme": "AES-256-GCM, key per tenant, no AAD",
       "stale_replay_after_retirement": {
+        "note": "no key versioning, so no retirement to test; the old ciphertext stays valid",
+        "outcome": "n/a"
+      },
+      "tenant_move": {
+        "error_type": "InvalidTag",
+        "outcome": "rejected"
+      }
+    },
+    {
+      "bob_note_for_reference": "Female, Self-employed, Rural, smoking: never smoked, hypertension: 0, heart disease: 0, stroke: 1",
+      "control_correct_row": {
         "outcome": "accepted",
-        "returned": "2026-01-15T09:30:00Z"
+        "returned": "Male, Private, Urban, smoking: formerly smoked, hypertension: 0, heart disease: 1, stroke: 1"
+      },
+      "expected_alice_note": "Male, Private, Urban, smoking: formerly smoked, hypertension: 0, heart disease: 1, stroke: 1",
+      "field_move": {
+        "error_type": "InvalidTag",
+        "outcome": "rejected"
+      },
+      "patient_swap": {
+        "error_type": "InvalidTag",
+        "outcome": "rejected"
+      },
+      "scheme": "AES-256-GCM, key per tenant, context as AAD",
+      "stale_replay_after_retirement": {
+        "note": "no key versioning, so no retirement to test; the old ciphertext stays valid",
+        "outcome": "n/a"
       },
       "tenant_move": {
         "error_type": "InvalidTag",
@@ -89,19 +114,100 @@
     },
     "scheme": "CPDPM FHIR layer"
   },
+  "leaked_key_exposure": {
+    "AES-256-CBC + HMAC, one shared key": {
+      "cells_opened": 200,
+      "corpus_cells": 200,
+      "corpus_fields": [
+        "note[*].text",
+        "effectiveDateTime"
+      ],
+      "corpus_patients_per_tenant": 50,
+      "corpus_tenants": 2,
+      "leaked_key_for": {
+        "path": "note[*].text",
+        "patient": "Patient/9046",
+        "tenant": "org:st-marys"
+      },
+      "patients_opened": 100,
+      "scheme": "AES-256-CBC + HMAC, one shared key",
+      "tenants_opened": 2
+    },
+    "AES-256-GCM, key per tenant, context as AAD": {
+      "cells_opened": 100,
+      "corpus_cells": 200,
+      "corpus_fields": [
+        "note[*].text",
+        "effectiveDateTime"
+      ],
+      "corpus_patients_per_tenant": 50,
+      "corpus_tenants": 2,
+      "leaked_key_for": {
+        "path": "note[*].text",
+        "patient": "Patient/9046",
+        "tenant": "org:st-marys"
+      },
+      "patients_opened": 50,
+      "scheme": "AES-256-GCM, key per tenant, context as AAD",
+      "tenants_opened": 1
+    },
+    "AES-256-GCM, key per tenant, no AAD": {
+      "cells_opened": 100,
+      "corpus_cells": 200,
+      "corpus_fields": [
+        "note[*].text",
+        "effectiveDateTime"
+      ],
+      "corpus_patients_per_tenant": 50,
+      "corpus_tenants": 2,
+      "leaked_key_for": {
+        "path": "note[*].text",
+        "patient": "Patient/9046",
+        "tenant": "org:st-marys"
+      },
+      "patients_opened": 50,
+      "scheme": "AES-256-GCM, key per tenant, no AAD",
+      "tenants_opened": 1
+    },
+    "CPDPM (this work)": {
+      "cells_opened": 1,
+      "corpus_cells": 200,
+      "corpus_fields": [
+        "note[*].text",
+        "effectiveDateTime"
+      ],
+      "corpus_patients_per_tenant": 50,
+      "corpus_tenants": 2,
+      "leaked_key_for": {
+        "path": "note[*].text",
+        "patient": "Patient/9046",
+        "tenant": "org:st-marys"
+      },
+      "patients_opened": 1,
+      "scheme": "CPDPM (this work)",
+      "tenants_opened": 1
+    }
+  },
   "matrix": {
     "AES-256-CBC + HMAC, one shared key": {
       "control": "accepted",
       "field_move": "accepted",
       "patient_swap": "accepted",
-      "stale_replay_after_retirement": "accepted",
+      "stale_replay_after_retirement": "n/a",
       "tenant_move": "accepted"
+    },
+    "AES-256-GCM, key per tenant, context as AAD": {
+      "control": "accepted",
+      "field_move": "rejected",
+      "patient_swap": "rejected",
+      "stale_replay_after_retirement": "n/a",
+      "tenant_move": "rejected"
     },
     "AES-256-GCM, key per tenant, no AAD": {
       "control": "accepted",
       "field_move": "accepted",
       "patient_swap": "accepted",
-      "stale_replay_after_retirement": "accepted",
+      "stale_replay_after_retirement": "n/a",
       "tenant_move": "rejected"
     },
     "CPDPM (this work)": {

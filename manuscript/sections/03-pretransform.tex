@@ -1,0 +1,45 @@
+\section{What a pre-transform layer can and cannot add}
+\label{sec:pretransform}
+
+Consider a scheme of the form
+\[
+\mathsf{Enc}'_{K,k}(m) = \mathsf{Enc}_K\big(T_k(m)\big),
+\]
+where $\mathsf{Enc}_K$ is a standard cipher under key $K$ and $T_k$ is a keyed bijection on byte strings applied first. This section analyses the pattern, implemented from its published descriptions, not any particular deployed system. Two of its conclusions hold for any keyed bijection $T_k$, whatever its keyspace; one is specific to the instance measured, the most common one, the per-byte affine map
+\[
+T_{a,b}(x_i) = (a\,x_i + b + i) \bmod 256, \qquad a \text{ odd},
+\]
+where $x_i$ is the $i$th plaintext byte and the position term $i$ is the ``contextual'' element such designs often include. Descriptions of this layer frequently carry further parameters, a prime modulus, a polynomial degree, a list of exponents, which motivates the first question.
+
+\subsection{Security: the key travels}
+\label{sec:security-pre}
+
+The security of the composite is settled by a two-line argument. If $T_k$ is public, or $k$ is transmitted with the ciphertext, as it must be when the receiver does not already share it, then an adversary against $\mathsf{Enc}'$ is an adversary against $\mathsf{Enc}$ with identical advantage: it applies $T_k$ to any plaintext it chooses and $T_k^{-1}$ to any plaintext it recovers. Conversely $\mathsf{Enc}'$ inherits every property of $\mathsf{Enc}$, since $T_k$ is a bijection. The composite is exactly as secure as the cipher, no more and no less~\cite{bellare2000ae}. If $k$ is kept secret and never transmitted, it adds at most $\log_2$ of its keyspace to a cipher that already has 256 bits of key; for a per-byte affine map that is \KeyspaceLog{} bits, for a full byte substitution table it is $\log_2(256!) \approx 1684$ bits, and for a chaotic sequence it depends on the parameter precision. None of these figures matters when $k$ travels. In no case does the layer change what an adversary with write access to the database can do, which is the concern of this paper.
+
+\subsection{Keyspace of the affine instance}
+
+Enumerating every pair $(a, b)$ over the full byte range and hashing the transform's output on the 256 canonical inputs yields exactly \Keyspace{} distinct transforms, that is $2^{\KeyspaceLog}$: 128 odd multipliers times 256 offsets. No other parameter in a description of the map changes the map, so no other parameter enlarges the keyspace. Whatever a paper lists, a per-byte affine layer has \KeyspaceLog{} bits of key. This figure is specific to the affine map; other transforms have other keyspaces, and Section~\ref{sec:security-pre} explains why the size does not rescue them.
+
+\subsection{Diffusion}
+
+Flipping one bit of one input byte changes exactly \DiffusionMean{} output byte in every one of \DiffusionTrials{} trials. A block cipher over the same 256 bytes would change about half of them. The layer therefore contributes no diffusion, and this holds for any per-byte transform, keyed or not, whatever its keyspace. Any uniformity observed in the final ciphertext, whether reported as entropy, as a flat histogram or as an avalanche statistic, is the property of the cipher behind the layer and would be observed with the layer removed.
+
+\subsection{Cost}
+
+The layer is not free either. Figure~\ref{fig:pretransform-cost} compares a password-based AES-256-CBC+HMAC pipeline with and without the affine layer, with key derivation counted identically on both sides and in both directions; earlier comparisons in this literature have sometimes charged the derivation to one side only. At 1\,KB and 8\,KB the ratio is \PreEncOneK$\times$ and \PreEncEightK$\times$: the fixed \PbkdfMs\,ms of PBKDF2 hides the layer entirely. At 64\,KB it is \PreEncSixtyFourK$\times$ and at 512\,KB \PreEncFiveTwelveK$\times$. Figure~\ref{fig:pretransform-decomp} shows where the time goes: the whole difference is the byte loop, \PreLoopFiveTwelveK\,ms at 512\,KB in Python, against a cipher that runs in hardware. The layer is free where records are small and a tax where files are large, and in both regimes it protects nothing.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{fig3-1_pre_transform_cost}
+\caption{The same password-based AES-256-CBC+HMAC pipeline with and without a per-byte affine pre-transform, key derivation counted on both sides. Medians with interquartile range over 15 runs; ratios annotated. The layer is free at record sizes and a pure-Python tax at file sizes.}
+\label{fig:pretransform-cost}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.8\linewidth]{fig3-2_time_decomposition}
+\caption{Where a pre-transform pipeline spends its time: PBKDF2 at 100{,}000 iterations, AES-256-CBC with HMAC, and the transform loop, stacked, against the measured total. The fixed key-derivation cost dominates until the loop overtakes it near 64\,KB.}
+\label{fig:pretransform-decomp}
+\end{figure}
+
+The conclusion is not that these schemes are insecure. Where a standard cipher sits behind the layer, they are exactly as secure as that cipher. The conclusion is that the effort they represent buys nothing an adversary notices, while a property the same adversary exploits every time, the absence of any binding between a ciphertext and its record, goes unaddressed. The next section spends the effort there.

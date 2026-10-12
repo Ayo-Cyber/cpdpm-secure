@@ -10,13 +10,13 @@ Done, in merged and open pull requests on `github.com/Ayo-Cyber/cpdpm-secure`:
 
 - Foundations: threat model, design doc, venue shortlist, CI, coverage gate, release workflow.
 - Chapter 3 analysis of the pre-transform pattern: scripts, pinned results, fig 3-1 and 3-2.
-- Construction: `cpdpm/` core, FHIR layer with manifest, streaming; 120 tests, 98% coverage, fuzzing, known-answer vectors.
+- Construction: `cpdpm/` core, FHIR layer with manifest, streaming; fuzzing, known-answer vectors, 100% line coverage including the commitment-mismatch and FHIR rejection branches.
 - Evaluation: attack matrix, full pyperf run, figs 5-0 to 5-2, table 5-1; x86-64 benchmark workflow (run it after merge).
 - Explanatory diagrams for chapters 4 and 5, self red-team review, SECURITY and CHANGELOG.
 
 Roughly six weeks of slack now sit in the calendar. Spend it on the reading (weeks 1–5, unchanged), on the writing, and on an external red-team read. The writing is yours; the evidence, figures and outline are ready for it.
 
-Still open before submission: repeat the pyperf run on x86-64, the critiqued-genre table for chapter 2, an external review.
+x86-64 benchmark done (21 Sep). Manuscript skeleton with §4 and §5 drafted is in `manuscript/`. Still open: §1, §2 (with the genre table), §3, §6, §7 prose; an external review.
 
 ## Under the tree on 25 December
 

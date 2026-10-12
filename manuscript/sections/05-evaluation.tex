@@ -1,0 +1,133 @@
+\section{Evaluation}
+\label{sec:evaluation}
+
+% DRAFTED FOR YOU to rewrite in your voice. Every number is a macro regenerated from the pinned result files.
+
+Four measurements. The first asks which of the manipulations of Section~\ref{sec:threat} each scheme rejects. The second asks what one leaked key exposes under each. The third asks what an operator has to do to contain that leak. The fourth asks what CPDPM costs. Both run from the artifact with one command; payloads are FHIR \code{Observation} resources built from a public stroke-prediction dataset of 5{,}110 rows~\cite{kaggle-stroke}, which supplies realistic record shapes and sizes and nothing more.
+
+\subsection{Record swap}
+\label{sec:swap}
+
+Four schemes are driven through one interface: the application encrypts one field of one resource for one patient in one tenant, stores the string, and later decrypts whatever it finds in that cell for the row it believes it is reading. They form a ladder, each adding one thing to the one before, so that the table reads as what each addition buys.
+
+\begin{itemize}
+  \item \textbf{AES-256-CBC with HMAC-SHA256 under one shared key}, random IV. A typical legacy design for encryption at rest.
+  \item \textbf{AES-256-GCM with one key per tenant}, random nonce, no associated data. A typical modern design.
+  \item \textbf{AES-256-GCM with one key per tenant and the context as associated data}: the same four fields CPDPM binds, joined with a delimiter, as an application would write them. This is the strongest scheme the AEAD interface offers without a key hierarchy, and the baseline against which CPDPM's binding claims are judged.
+  \item \textbf{CPDPM}, AES-256-GCM suite.
+\end{itemize}
+
+Four manipulations by an adversary with database write access, illustrated in Figure~\ref{fig:record-swap}:
+\begin{itemize}
+  \item \emph{Patient swap.} Bob's ciphertext is copied into Alice's row; the application decrypts for Alice.
+  \item \emph{Tenant move.} A ciphertext from tenant $P$ is stored in tenant $Q$'s table; the application decrypts for $Q$.
+  \item \emph{Field move.} The ciphertext of the note field is written into the column for the effective date, so a value bound to \code{note[*].text} is read as \code{effectiveDateTime}.
+  \item \emph{Stale replay after key retirement.} A ciphertext written before a key rotation is presented after the old key is retired. Only CPDPM has key versioning, so for the three baselines this column records a missing capability rather than a failed check.
+\end{itemize}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{fig5-0_record_swap}
+\caption{The record-swap attack. The adversary copies Bob's ciphertext into Alice's row; the application, reading Alice's row, decrypts for Alice. Outcome by scheme, and the measured matrix for all four manipulations.}
+\label{fig:record-swap}
+\end{figure}
+
+\begin{table}[t]
+\centering\footnotesize
+\caption{Outcome of each storage-layer manipulation. ``Accepted'' means the application received plaintext with no error, that is, the wrong patient's data presented as the right one. ``n/a'' means the scheme has no key versioning and so no retirement to test. All results from \code{paper/evaluation/record\_swap.py}.}
+\label{tab:swap}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}R{4.9cm}cccc@{}}
+\toprule
+Scheme & Patient swap & Tenant move & Field move & Stale replay \\
+\midrule
+AES-256-CBC + HMAC, one shared key & \SwapCbcPatient & \SwapCbcTenant & \SwapCbcField & \SwapCbcReplay \\
+AES-256-GCM, key per tenant & \SwapGcmPatient & \SwapGcmTenant & \SwapGcmField & \SwapGcmReplay \\
+AES-256-GCM, key per tenant, context as AAD & \SwapAadPatient & \SwapAadTenant & \SwapAadField & \SwapAadReplay \\
+CPDPM & \SwapCpdpmPatient & \SwapCpdpmTenant & \SwapCpdpmField & \SwapCpdpmReplay \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:swap} gives the result. The shared-key baseline accepts all three substitutions: its MAC proves the bytes were produced under the key, not that they belong to this row. The per-tenant baseline rejects only the tenant move, because the key differs, and accepts the other two. Binding the context as associated data rejects all three, and so does CPDPM. On substitution the two are indistinguishable, and that is the reading the table should be given: the binding that stops the record-swap attack is associated data, available from any AEAD, and CPDPM's contribution to binding is to fix what is bound and an encoding under which two contexts cannot collide (Section~\ref{sec:context}). The delimiter-joined associated data of the baseline is injective only while identifiers cannot contain the delimiter, a discipline the application has to keep; a FHIR reference such as \code{Patient/123} contains the usual choice. What separates the last two rows is the retirement column. After rotation and retirement of the key version under which a ciphertext was written, CPDPM rejects it; the baselines have a single long-lived key per tenant, so a stale ciphertext stays valid indefinitely, and the column reports that as a capability difference rather than a failed check. The same swap driven through the FHIR layer, Bob's encrypted \code{Condition} stored in Alice's row and decrypted for Alice, is likewise \SwapFhir{}. Beyond the four manipulations, the manifest of Section~\ref{sec:fhir} detects deletion, reordering and duplication of encrypted fields and per-field replay within a resource; these are exercised in the test suite rather than repeated here.
+
+Two notes. Per-tenant keys already stop the tenant move, so binding the context contributes the patient-swap and field-move columns, and CPDPM's retirement column is a key-management capability rather than a binding result. And retirement is not replay within a live key version; the latter is discussed in Section~\ref{sec:discussion}.
+
+\subsection{Leaked-key exposure}
+\label{sec:exposure}
+
+The swap experiment cannot separate CPDPM from the associated-data baseline, so a second measurement asks what the per-context key is for. A corpus of \CorpusTenants{} tenants, \CorpusPatients{} patients per tenant and \CorpusFields{} encrypted fields per patient, \CorpusCells{} cells in all, is written under each scheme. The key the application used to decrypt one cell, Alice's note in tenant $P$, is then leaked: the shared key, the tenant key, or for CPDPM the derived $\Kctx$. Every cell is attacked with that key alone and the cell's own associated data, which the adversary can read from the row. The attack is the raw AEAD call with no derivation, since the adversary does not hold the master key. Table~\ref{tab:exposure} counts the cells that open.
+
+\begin{table}[t]
+\centering\footnotesize
+\caption{What one leaked key exposes. The key the application used for Alice's note in one tenant is given to the adversary, who tries it against every cell of a corpus of \CorpusCells{} cells (\CorpusTenants{} tenants, \CorpusPatients{} patients each, \CorpusFields{} fields each). All results from \code{paper/evaluation/record\_swap.py}.}
+\label{tab:exposure}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}R{4.9cm}ccc@{}}
+\toprule
+Scheme & Cells opened & Patients & Tenants \\
+\midrule
+AES-256-CBC + HMAC, one shared key & \LeakCbcCells{} of \CorpusCells & \LeakCbcPatients & \LeakCbcTenants \\
+AES-256-GCM, key per tenant & \LeakGcmCells{} of \CorpusCells & \LeakGcmPatients & \LeakGcmTenants \\
+AES-256-GCM, key per tenant, context as AAD & \LeakAadCells{} of \CorpusCells & \LeakAadPatients & \LeakAadTenants \\
+CPDPM & \LeakCpdpmCells{} of \CorpusCells & \LeakCpdpmPatients & \LeakCpdpmTenants \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+One leaked key opens the whole corpus under the shared key, one tenant's \LeakAadCells{} cells under either per-tenant scheme, associated data or not, and under CPDPM the one cell it was derived for. This is the measurement that justifies the derivation step. Associated data decides whether a ciphertext is accepted in a place; the per-context key decides how much a single key compromise reveals. The derived key is also the key that is in memory for the duration of one operation and the key a hardware or service wrapper would hand back, so the table measures the exposure of the common failure. Loss of the master key exposes everything under every scheme, and no key hierarchy changes that.
+
+\subsection{Containing a leak}
+\label{sec:containment}
+
+The exposure table says what a leaked working key reveals. A third measurement asks what an operator must do about it, because that is where the key hierarchy changes practice. Under each scheme the corpus of Section~\ref{sec:exposure} is written and the same key is leaked. The leak is then contained: the leaked material is replaced, by a new shared key, a new key for the affected tenant, or a new CPDPM master version, and every cell the leaked key could open is re-encrypted, which is exactly the set that must move before the leak is harmless. Afterwards the leaked key is tried against every cell and must open none, and every cell must still decrypt for the application. Table~\ref{tab:containment} reports the secrets each scheme keeps at rest, the cells re-encrypted, and the median wall-clock time over \ContainRepeats{} runs.
+
+\begin{table}[t]
+\centering\footnotesize
+\caption{Containing one working-key leak. The leaked material is replaced and every cell the leaked key could open is re-encrypted; the leaked key then opens nothing and every cell still decrypts. Time is the median of \ContainRepeats{} runs, in process, on the \CorpusCells-cell corpus. All results from \code{paper/evaluation/containment.py}.}
+\label{tab:containment}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}R{4.3cm}R{2.6cm}cc@{}}
+\toprule
+Scheme & Secrets at rest & Cells re-encrypted & Time (ms) \\
+\midrule
+AES-256-CBC + HMAC, one shared key & \ContainCbcSecrets & \ContainCbcCells{} of \CorpusCells & \ContainCbcMs \\
+AES-256-GCM, key per tenant & \ContainGcmSecrets & \ContainGcmCells{} of \CorpusCells & \ContainGcmMs \\
+AES-256-GCM, key per tenant, context as AAD & \ContainAadSecrets & \ContainAadCells{} of \CorpusCells & \ContainAadMs \\
+CPDPM & \ContainCpdpmSecrets & \ContainCpdpmCells{} of \CorpusCells & \ContainCpdpmMs \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Under the shared key the whole corpus moves. Under either per-tenant scheme the whole tenant moves, and associated data makes no difference. Under CPDPM one cell moves, because the leaked key opened one cell; the others stay under the previous master version, which remains readable until it is retired, so their re-encryption can be scheduled rather than forced, and the retirement column of Table~\ref{tab:swap} is what makes the old version stop working once that schedule completes. CPDPM also keeps the fewest secrets at rest: one master key per live version, with derived keys never stored, whereas the per-tenant schemes keep one key per tenant and the shared-key scheme two.
+
+At the measured per-cell cost, a deployment of \ScaleTenants{} tenants, \ScalePatients{} patients per tenant and \ScaleFields{} encrypted fields per patient, \ScaleCellsTotal{} cells, would re-encrypt \ScaleContainCbcCells{} cells (\ScaleContainCbcTime) under the shared key, \ScaleContainAadCells{} (\ScaleContainAadTime) under either per-tenant scheme, and one under CPDPM. These times are a floor: they are the cryptographic work alone, measured in process on strings of a few dozen bytes. In a deployment, reading and writing every affected cell dominates, and that cost scales with the same count. The count is what the key hierarchy changes, and the time follows it.
+
+In operational terms the difference is the shape of the incident. A working key leaks through a memory dump, a crash report or a misrouted log, and the leak is discovered. Under a per-tenant key the response is tenant-wide: a change window, a re-encryption job over every record of that tenant, a key rollover coordinated with every service that holds the key, and a period during which the tenant's data is either unavailable or still exposed. Under CPDPM the response is a new master version, which is one write to the key store, and a re-encryption of the record the leaked key opened, which is one row; no other record is readable with what leaked, so nothing else has to move before the incident is closed. The remaining records migrate to the new version at their own pace, read and rewritten under the current key as they are touched or swept, and the previous version is retired once the sweep completes, after which any ciphertext still under it is rejected rather than silently served. A clinician sees nothing in either case if the procedure is followed; the difference is how much has to happen, and how fast, for that to be true.
+
+Two things this does not change. Loss of the master key exposes everything under every scheme, and recovering from it re-encrypts everything under every scheme; the advantage measured here is confined to working-key leaks, which are the common failure. And a scheduled rotation of the master version, for reasons other than a leak, is the same whole-corpus job under CPDPM as under the baselines, spread over the retention window by the readable-until-retired rule rather than forced into one change window.
+
+\subsection{Cost}
+\label{sec:cost}
+
+Encryption and decryption latency were measured with \code{pyperf} (eight processes, three values each, one warm-up) for FHIR bundles of 1, 10, 100 and 1{,}000 observations, from \BytesOne{} to \BytesThousand{} bytes, against three widely used libraries with pre-established keys and no password derivation on the hot path: raw AES-256-GCM from \code{cryptography}, Fernet, and Google Tink's AES-256-GCM. Each reported median is of \BenchValues{} samples; the standard deviation is \BenchMedianCv\% of the median at the typical point and \BenchMaxCv\% at the worst, which is \BenchMaxCvWhere{} record (\XBenchMaxCv\% at the worst on x86-64), so the ratios are stable to the two decimals shown for every point but that one. CPDPM was measured in both suites. The reported run is on \BenchPlatform{} under Python \BenchPython; the same suite was run on an x86-64 GitHub Actions runner (\XCpu) and is summarised below. Figures~\ref{fig:latency} and~\ref{fig:overhead} show the results.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{fig5-1_latency}
+\caption{Median latency per operation, log scale, for FHIR bundle payloads of 1 to 1{,}000 observations.}
+\label{fig:latency}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.8\linewidth]{fig5-2_overhead}
+\caption{Encryption time relative to raw AES-256-GCM, log scale. CPDPM's fixed per-operation cost is amortised as payloads grow; Fernet's relative cost grows with payload size.}
+\label{fig:overhead}
+\end{figure}
+
+CPDPM with AES-GCM carries a fixed cost of about \CpdpmFixedUs\,$\mu$s per operation: two HKDF derivations, the commitment, and header and context encoding. It then tracks raw AES-GCM. On a single \BytesOne-byte record it is \CpdpmRatioOne$\times$ the raw floor at \CpdpmUsOne\,$\mu$s; at \BytesHundred{} bytes it is \CpdpmRatioHundred$\times$; at \BytesThousand{} bytes it is \CpdpmRatioThousand$\times$. Fernet, the most common ``just encrypt it'' choice in Python, is \FernetRatioOne$\times$ at one record and \FernetRatioThousand$\times$ at a thousand, so CPDPM is faster than Fernet from ten records upward while binding what Fernet does not. Tink is faster than the raw baseline at small sizes because it caches the cipher object where the baseline constructs one per call, which is how application code typically behaves. The FHIR field-level path with three encrypted fields on one observation costs \FhirFieldsEncUs\,$\mu$s to encrypt and \FhirFieldsDecUs\,$\mu$s to decrypt, about 37\,$\mu$s per field including the manifest: per-field key derivation is the price of per-field binding.
+
+The x86-64 run tells the same story with different constants: CPDPM with AES-GCM is \XCpdpmRatioOne$\times$ the raw floor at one record and \XCpdpmRatioThousand$\times$ at a thousand, a fixed cost of about \XCpdpmFixedUs\,$\mu$s, and Fernet is \XFernetRatioThousand$\times$ at a thousand.
+
+One result needs a caveat. The XChaCha20-Poly1305 suite measures \XchachaRatioThousand$\times$ the raw floor at \BytesThousand{} bytes on the arm64 machine and \XXchachaRatioThousand$\times$ on x86-64. A direct comparison on the arm64 machine shows PyNaCl's bundled libsodium encrypting 670\,KB in about 10\,ms where OpenSSL's ChaCha20-Poly1305 takes 0.3\,ms and hardware-accelerated AES-GCM 0.07\,ms; the gap is the library build and the absence of hardware acceleration for ChaCha, not the construction. AES-GCM is the default suite for that reason, and a \code{cryptography}-backed ChaCha20-Poly1305 suite is the natural next addition.

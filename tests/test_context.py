@@ -1,3 +1,5 @@
+import unicodedata
+
 import pytest
 from hypothesis import given
 from hypothesis import strategies as st
@@ -5,11 +7,11 @@ from hypothesis import strategies as st
 from cpdpm import Context, ContextError
 
 field = st.text(
-    alphabet=st.characters(blacklist_categories=("Cs", "Cc")),
+    alphabet=st.characters(blacklist_categories=("Cs", "Cc", "Cn")),
     min_size=1,
     max_size=40,
 )
-optional = st.text(alphabet=st.characters(blacklist_categories=("Cs", "Cc")), max_size=40)
+optional = st.text(alphabet=st.characters(blacklist_categories=("Cs", "Cc", "Cn")), max_size=40)
 
 
 @given(field, optional, field, field, optional, field, optional, field, field, optional)
@@ -56,6 +58,16 @@ def test_nfc_normalisation() -> None:
 def test_control_characters_rejected() -> None:
     with pytest.raises(ContextError):
         Context("t\n", "p", "R", "f")
+
+
+@pytest.mark.parametrize("cp", [0x0378, 0x10FFFE, 0xE0080])
+def test_unassigned_code_points_rejected(cp: int) -> None:
+    # Normalisation is stable only for assigned characters (Unicode stability
+    # policy), so an unassigned code point is the one thing that could make two
+    # interpreters canonicalise the same identifier differently. Reject it.
+    assert unicodedata.category(chr(cp)) == "Cn"
+    with pytest.raises(ContextError, match="unassigned"):
+        Context("t", "p", "R", "f" + chr(cp))
 
 
 def test_field_too_long() -> None:

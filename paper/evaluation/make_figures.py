@@ -147,6 +147,15 @@ def table_attacks() -> None:
         lines.append("| " + " | ".join([scheme] + vals) + " |")
     fh = data["fhir_layer"]
     lines.append(f"| {fh['scheme']} | accepted | {fh['patient_swap']['outcome']} | – | – | – |")
+    if "leaked_key_exposure" in data:
+        lines += ["", "Leaked-key exposure (one cell's key leaked; cells it opens):", ""]
+        lines.append("| Scheme | Cells opened | Patients | Tenants |")
+        lines.append("|---|---|---|---|")
+        for scheme, e in data["leaked_key_exposure"].items():
+            lines.append(
+                f"| {scheme} | {e['cells_opened']}/{e['corpus_cells']} | "
+                f"{e['patients_opened']} | {e['tenants_opened']} |"
+            )
     (FIGURES / "table5-1_attack_matrix.md").write_text("\n".join(lines) + "\n")
 
 

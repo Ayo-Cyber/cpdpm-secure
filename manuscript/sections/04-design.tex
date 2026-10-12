@@ -1,0 +1,143 @@
+\section{Design}
+\label{sec:design}
+
+% DRAFTED FOR YOU to rewrite in your voice. Every statement is checkable against docs/design.md and cpdpm/.
+
+CPDPM encrypts a value with a standard AEAD under a key that depends on the value's context, and binds the same context as associated data. Nothing is new at the primitive level. The contribution is the discipline: which facts constitute the context, how they are encoded so that two contexts can never collide, how keys are derived and versioned, what travels with the ciphertext and what never does, and how the construction fails. Figure~\ref{fig:baseline-vs-cpdpm} places the design beside the shared-key baseline it replaces; Figure~\ref{fig:architecture} shows where it sits in a deployment.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{fig4-0_baseline_vs_cpdpm}
+\caption{Shared-key encryption at rest (top) and CPDPM (bottom). Both use the same primitives. Only one of them knows whose value it is encrypting, and only that one can refuse to decrypt it anywhere else.}
+\label{fig:baseline-vs-cpdpm}
+\end{figure}
+
+\subsection{Threat model}
+\label{sec:threat}
+
+The application host is trusted: it holds master keys in memory and decides who may read what. Everything it stores is not. The database, object store, backups and replicas may be read, written, reordered, duplicated or rolled back by an adversary, and the adversary we care most about is an insider with write access: a database administrator, a compromised service account, a malicious migration. Their goal is not to read ciphertext, which confidentiality already denies them. It is to make the application decrypt the \emph{wrong} ciphertext in the \emph{right} place, so that a clinician sees one patient's data under another's name with no error raised, or to reuse a ciphertext in a context it was never authorised for.
+
+Out of scope are compromise of the application host while keys are in memory, side channels beyond constant-time comparison, availability, and leakage of ciphertext lengths and of which fields are encrypted. Authorisation is the application's decision; CPDPM makes that decision enforceable at the ciphertext but does not make it.
+
+\subsection{Context and its canonical encoding}
+\label{sec:context}
+
+A context is five strings: \code{tenant}, \code{patient}, \code{resource\_type}, \code{field\_path} and an optional \code{purpose}. The first, third and fourth are required. The patient may be empty for tenant-level resources such as an \code{Organization}; the empty value is itself bound, so a ciphertext made for no patient cannot be presented for one.
+
+The canonical encoding is
+\[
+\canon(\ctx) = \mathtt{0x01} \concat \ell(t)\concat t \concat \ell(p)\concat p \concat \ell(r)\concat r \concat \ell(f)\concat f \concat \ell(u)\concat u,
+\]
+where each $\ell(\cdot)$ is a two-byte big-endian length and each string is NFC-normalised UTF-8. Length-prefixing every field makes the encoding injective: $(\mathtt{ab}, \mathtt{c})$ and $(\mathtt{a}, \mathtt{bc})$ encode differently, so no two distinct contexts share a key or associated data. NFC normalisation prevents two visually identical identifiers from becoming two contexts. Control characters and lone surrogates are rejected at construction, so a context value cannot carry a newline into a log or fail to encode.
+
+The context is an \emph{input} to encryption and decryption, supplied by the caller both times. It is never stored with the ciphertext, and the header carries no context field. The caller must derive it from authenticated facts: the tenant of the logged-in user, the row being read, the resource type, the field path. An application that stores the context beside the ciphertext and reads it back at decrypt time has undone the binding, because the adversary who can move the ciphertext can move the stored context with it.
+
+\subsection{Key hierarchy}
+\label{sec:keys}
+
+Figure~\ref{fig:key-hierarchy} shows the derivation. A key-encryption key lives in a key-management service or hardware module and wraps one or more 32-byte master data keys $\MK[v]$, indexed by version $v$. Encryption uses the current version; decryption uses whichever version the ciphertext header names. Rotating adds a version without re-encrypting history. Retiring destroys a version and with it every ciphertext under it, which is how a data-retention deadline becomes a cryptographic fact.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{fig4-1_key_hierarchy}
+\caption{Key hierarchy and encryption path. The context is supplied by the caller, canonically encoded, and used twice: to derive the per-context key through HKDF and as associated data to the AEAD together with the header. The ciphertext carries no key material and no context.}
+\label{fig:key-hierarchy}
+\end{figure}
+
+From a master key and a context, HKDF-SHA256 derives two values:
+\begin{align*}
+\Kctx &= \hkdf\big(\MK[v];\ \mathtt{info} = \text{``cpdpm/key''} \concat \mathit{suite} \concat \canon(\ctx)\big), \\
+\mathit{commit} &= \hkdf\big(\MK[v];\ \mathtt{info} = \text{``cpdpm/commit''} \concat \canon(\ctx)\big),
+\end{align*}
+each 32 bytes, with an empty salt, which is sound for uniformly random input keying material. The suite identifier in the first label keeps the AES-GCM and XChaCha20-Poly1305 keys for one context independent.
+
+Deriving a key per context, rather than relying on associated data alone, buys two things, and neither is binding: associated data already rejects a ciphertext presented in the wrong place, as Section~\ref{sec:swap} confirms. A leaked derived key exposes one patient's one field, not a tenant; Section~\ref{sec:exposure} measures this. And the number of encryptions under any single key is the write count of one field of one patient, so 96-bit random nonces under AES-GCM remain far from their collision bound. That bound is a number, not a hope: NIST SP~800-38D limits random-IV AES-GCM to $2^{32}$ invocations under one key~\cite{nist-gcm}, and under CPDPM one key is one context under one master version, so the limit is $2^{32}$ writes to one field of one patient between master rotations. The library is stateless by design, deriving keys rather than storing them, so it cannot count writes per context; the bound is enforced by the application or by a rotation schedule, and a deployment that cannot bound writes per field should select the XChaCha20-Poly1305 suite, whose 192-bit nonce makes the collision bound irrelevant at any write rate.
+
+\subsection{Encryption and wire format}
+\label{sec:wire}
+
+A value $m$ is encrypted as
+\[
+\mathit{blob} = \mathit{hdr} \concat \aead.\mathsf{Enc}\big(\Kctx,\ \mathit{nonce},\ \mathit{aad} = \mathit{hdr} \concat \canon(\ctx),\ \mathit{commit} \concat m\big),
+\]
+where $\mathit{hdr}$ is the eleven-byte header of Figure~\ref{fig:wire} followed by the nonce: a magic string, the protocol version, the suite, the master-key version and the nonce length. Because the header is part of the associated data, tampering with the suite, the key version or the nonce is a forgery. Because $\canon(\ctx)$ is part of the associated data \emph{and} of the key derivation, a ciphertext presented under any other context fails twice over.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{fig4-2_wire_format}
+\caption{Wire formats. (A) One-shot blob: header fields are authenticated but not encrypted; the commitment and the value are encrypted; the tag authenticates everything together with the canonical context. (B) Stream: the same header shape with a chunk size and nonce prefix; each chunk's nonce carries a counter and a last-chunk flag.}
+\label{fig:wire}
+\end{figure}
+
+The 32-byte $\mathit{commit}$ prepended to every plaintext is a key commitment in the padding-fix style~\cite{albertini2022commitment}. AES-GCM and ChaCha20-Poly1305 are not key-committing: an adversary who controls a ciphertext can make it decrypt validly under two different keys, which in a password-derived-key setting enables partitioning-oracle attacks~\cite{len2021partitioning}. After decryption the first 32 bytes are compared in constant time against the derived commitment; a ciphertext that authenticates under some other key would have to decrypt to that key's commitment as well, which it cannot. When does this matter here? In the normal path the header names the master-key version, so the receiver holds exactly one candidate master key and there is no partition to exploit. The commitment earns its place on two other paths: when the master key is derived from a password (Section~\ref{sec:keys}), where every candidate password is a candidate key and a partitioning oracle would test many at once; and as defence in depth during migrations or misconfigurations in which a keyring holds several candidates for one version. The commitment label omits the suite where the key label includes it: the commitment is compared, not used as a key, so the two suites may share it, and a value that is the same under both suites means a ciphertext cannot be re-labelled from one suite to the other without also failing the commitment. The cost is 32 bytes per ciphertext and one additional HKDF call. Table~\ref{tab:overhead} gives the measured overhead: \OverheadGcm{} bytes per blob with AES-GCM and \OverheadXchacha{} with XChaCha20-Poly1305, independent of payload size.
+
+\begin{table}[t]
+\centering\footnotesize
+\caption{Bytes added per ciphertext, measured. Blob overhead is constant: 11-byte header, nonce (12 or 24 bytes), 32-byte commitment, 16-byte tag. The text form adds a 7-byte prefix and base64url expansion. The stream adds 15 bytes plus prefix, commitment and one tag per 64\,KiB chunk.}
+\label{tab:overhead}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}rrrrrr@{}}
+\toprule
+Plaintext & GCM blob & GCM text & XChaCha blob & XChaCha text & GCM stream \\
+\midrule
+0 B & +71 B & +102 B & +83 B & +118 B & +70 B \\
+726 B & +71 B & +344 B & +83 B & +360 B & +70 B \\
+67,113 B & +71 B & +22,473 B & +83 B & +22,489 B & +86 B \\
+669,830 B & +71 B & +223,379 B & +83 B & +223,395 B & +230 B \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Decryption has one failure mode. Malformed header, unknown key version, authentication failure and commitment mismatch all raise the same exception with the same fixed message, so the decrypt path cannot serve as an oracle for which check failed. For JSON stores the blob is carried as a base64url string with a fixed prefix, so it is never mistaken for another scheme's output.
+
+\subsection{Field-level encryption of FHIR resources}
+\label{sec:fhir}
+
+Clinical systems exchange records as FHIR resources, JSON documents with a known structure~\cite{fhir-r4}. Encrypting a whole resource defeats search; encrypting nothing defeats the purpose. CPDPM encrypts selected paths. A policy names them. For a \code{Condition} resource the policy might select the free-text description of the diagnosis (\code{code.text}) and the clinical notes (\code{note[*].text}). Each selected value is serialised, encrypted under a context whose field path is the policy path with array indices collapsed to \code{[*]}, and replaced in place by the text form of its ciphertext. Coded fields used for search stay clear. Figure~\ref{fig:manifest} shows the result.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{fig4-3_fhir_manifest}
+\caption{A FHIR \code{Condition} with two paths encrypted, the manifest that binds them, and the checks decryption performs in order. The encrypted-paths tags are informational; the manifest is authoritative.}
+\label{fig:manifest}
+\end{figure}
+
+Per-field AEAD binds each value to its path but not the \emph{set} of values. An insider could delete an encrypted allergy note, or put back an older ciphertext of one field, and every remaining field would still decrypt. Each encrypted resource therefore carries a \emph{manifest}: the ordered list of encrypted paths and a SHA-256 digest of each ciphertext, itself encrypted under the context with field path \code{\_manifest} and stored as a FHIR \code{meta.tag}. Decryption verifies the manifest before releasing any field, so deletion, reordering, duplication, per-field replay and the insertion of a genuine ciphertext from another document are all detected. An optional mode also binds a digest of the clear fields, making the whole resource tamper-evident while search fields stay readable. Replacing an entire resource, manifest included, with an older version of itself is not detected; that requires a version number in the application's context and is discussed in Section~\ref{sec:discussion}.
+
+\subsection{Streaming}
+\label{sec:stream}
+
+Imaging studies and document exports do not fit in memory, and one-shot AEAD cannot release verified output incrementally. For these CPDPM provides the STREAM construction~\cite{hoang2015stream} over the same per-context key: the payload is split into chunks, chunk $i$ is encrypted with nonce $\mathit{prefix} \concat i \concat \mathit{last}$ and the stream header plus $\canon(\ctx)$ as associated data, and the commitment is prepended to the first chunk. Truncation, extension, dropping, reordering and duplicating chunks all fail authentication. Each chunk is released only after its tag verifies; a consumer that sees a failure part-way must discard what it has received, which is inherent to streaming authenticated encryption.
+
+\subsection{Deployment}
+\label{sec:deployment}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{fig4-4_architecture}
+\caption{System architecture. Above the trust boundary, the application builds the context from authenticated facts and calls the library; the key store holds the key-encryption key and sees only wrapped master keys. Below it, storage may be rewritten at will, and every move of a ciphertext between rows, tenants or fields is rejected on read.}
+\label{fig:architecture}
+\end{figure}
+
+Figure~\ref{fig:architecture} places the components. Two rules carry the design. The context comes from the application, never from the stored document. Master keys never leave the trusted host; storage sees ciphertext and cannot tell which key produced which blob.
+
+\subsection{Security argument}
+\label{sec:security}
+
+Let the AEAD be secure in the standard sense (indistinguishability under chosen-ciphertext attack and integrity of ciphertexts), and let HKDF-SHA256 be a pseudorandom function under a uniformly random master key.
+
+\begin{enumerate}
+  \item \emph{Distinct contexts, independent keys.} For $\ctx \neq \ctx'$, $\canon(\ctx) \neq \canon(\ctx')$ by injectivity of the length-prefixed encoding, so the HKDF labels differ and $K_{\ctx}$, $K_{\ctx'}$ are computationally independent.
+  \item \emph{Confidentiality.} Follows from AEAD confidentiality under each derived key; a hybrid over at most $q$ contexts loses a factor $q$.
+  \item \emph{Integrity.} Any change to header, nonce or ciphertext is a forgery under the AEAD's integrity notion.
+  \item \emph{Context binding.} A ciphertext $(\mathit{hdr}, c)$ made for $\ctx$ and presented under $\ctx'$ is decrypted with $K_{\ctx'}$ and associated data $\mathit{hdr} \concat \canon(\ctx')$. The encryption oracle for $K_{\ctx'}$ may well have produced ciphertexts with that associated data, namely the genuine records of $\ctx'$, but it never produced this particular pair $(\mathit{hdr}, c)$ under $K_{\ctx'}$: the pair was output under the independent key $K_{\ctx}$. Acceptance is therefore a fresh valid ciphertext under $K_{\ctx'}$, a forgery in the sense of integrity of ciphertexts, bounded by that advantage.
+  \item \emph{Compartmentalisation.} Given $K_{\ctx}$, recovering $\MK[v]$ or any $K_{\ctx'}$ contradicts pseudorandomness of HKDF.
+  \item \emph{Key commitment.} A ciphertext accepted under two candidate master keys would have to decrypt to both keys' 32-byte commitments in its first 32 bytes, which for computationally independent values happens with negligible probability.
+\end{enumerate}
+
+The reduction is routine. Its value is in stating precisely what the encoding, the derivation and the associated data each contribute, and then showing empirically, in Section~\ref{sec:evaluation}, which of those properties each baseline lacks.
+
+\subsection{Implementation}
+\label{sec:impl}
+
+The construction is implemented as a Python library of eight modules over the \code{cryptography} bindings to OpenSSL and, for XChaCha20-Poly1305, PyNaCl's bindings to libsodium. The test suite covers round trips on both suites at every payload size from empty to a mebibyte; every byte of a ciphertext flipped; every truncation length; every context field changed one at a time; the record-swap attack; rotation and retirement; field deletion, reordering, duplication and per-field replay through the manifest; chunk drop, swap and duplication in streams; and property-based fuzzing of every parser that touches untrusted input, where the property is that only the contracted exception type escapes. Known-answer vectors pin the exact bytes of the encoding, the derivation labels and the header, so any unintended change to the format fails a test. Every line of the library is executed by the suite. The lines that were not, until a review of this paper asked what the uncovered fraction contained, were the commitment-mismatch branch of both decrypt paths, the stream's chunk-counter bound and three structural rejections in the FHIR layer; the commitment branch is now exercised by a forged ciphertext made with a leaked per-context key and no master, which the AEAD accepts and the commitment rejects. The suite runs on Python 3.10 through 3.13 in continuous integration.

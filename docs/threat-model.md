@@ -65,7 +65,7 @@ G3 and G3a are the contribution. G1, G2, G4, G5 and G6 are table stakes that sha
 
 ## 5. The demonstrated attack
 
-The evaluation chapter runs one concrete attack against three schemes.
+The evaluation chapter runs one concrete attack against four schemes, and a leaked-key exposure count.
 
 **Setup.** Two patients, Alice and Bob, each with an encrypted `Condition` resource stored in a table keyed by patient ID and field.
 
@@ -75,9 +75,10 @@ The evaluation chapter runs one concrete attack against three schemes.
 |---|---|
 | AES-256-CBC + HMAC, one shared key | Decrypts cleanly. Clinician sees Bob's condition under Alice's name. **Undetected.** |
 | AES-256-GCM with random nonce, no associated data | Decrypts cleanly. **Undetected.** Confidentiality is perfect; binding is absent. |
+| AES-256-GCM, key per tenant, context as associated data | Rejected. The tag fails under Alice's AAD. Associated data alone stops the swap; it does not bound what one leaked key exposes, and has no key versioning. |
 | CPDPM (this design) | Rejected. The derived key and the associated data both differ. |
 
-Variants also run: cross-tenant move, cross-field move (`note` to `diagnosis`), and replay of a stale ciphertext over a fresh one under a rotated key version.
+Variants also run: cross-tenant move, cross-field move (`note` to `diagnosis`), and replay of a stale ciphertext over a fresh one under a rotated key version. A separate measurement leaks the key the application used for one cell and counts the cells it opens across a corpus: every cell under a shared key, one tenant under either per-tenant scheme, one cell under CPDPM.
 
 ## 6. Assumptions
 
